@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import {
   Ceremony,
-  VoteCount,
-  Vote,
+  VoteCountsResponse,
+  VotingStatus,
+  CeremonyResults,
+  CategoryLeaderboard,
   Category,
   Movie,
   Professional,
@@ -16,6 +18,8 @@ import { getSession } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VotingPanel } from "@/components/VotingPanel";
+import { VotingProgress } from "@/components/VotingProgress";
+import { CeremonyResultsView } from "@/components/CeremonyResultsView";
 import { AddNominationModal } from "@/components/AddNominationModal";
 import { closeCeremony } from "@/lib/actions/ceremonies";
 
@@ -35,27 +39,73 @@ export default async function CeremonyPage({
 
   const session = await getSession();
   const isAdmin = session?.rol === UserRole.ADMIN;
+  const isAcademyMember = session?.rol === UserRole.ACADEMY_MEMBER;
   const isOpen = ceremony.estado === CeremonyState.ABIERTA;
 
-  // Fetch vote data (requires auth)
-  let voteCounts: VoteCount[] = [];
+  // Vote counts (flat map por nominación para VotingPanel)
+  const voteCountMap: Record<string, number> = {};
+  let totalVotosCeremonia = 0;
+
+  // My votes (for academy member voting state)
   const myVotes: Record<string, string> = {};
 
+  // Voting status progress (academy member, open ceremony)
+  let votingStatus: VotingStatus | null = null;
+
+  // Results (closed ceremony, all authenticated)
+  let results: CeremonyResults | null = null;
+
+  // Leaderboard per category (admin always, others only when closed)
+  const leaderboards: Record<string, CategoryLeaderboard> = {};
+
   if (session) {
+    // Vote counts always fetched for authenticated users
     try {
-      voteCounts = await api.get<VoteCount[]>(`/votes?idCeremonia=${id}`);
+      const countsResp = await api.get<VoteCountsResponse>(`/votes?idCeremonia=${id}`);
+      totalVotosCeremonia = countsResp.resumen.totalVotosCeremonia;
+      for (const r of countsResp.resultados) {
+        voteCountMap[r.nominacion.id] = r.votos;
+      }
     } catch {}
 
-    if (session.rol === UserRole.ACADEMY_MEMBER) {
+    // My votes (academy member)
+    if (isAcademyMember) {
       try {
-        const allVotes = await api.get<Vote[]>(
-          `/votes/my-vote?idCeremonia=${id}`,
+        const myVotesResp = await api.get<{ voto: { id: string }; categoria: { id: string }; nominacion: { id: string } }[]>(
+          `/votes/my-votes?idCeremonia=${id}`
         );
-        const votesArr = Array.isArray(allVotes) ? allVotes : [allVotes];
-        for (const v of votesArr) {
-          myVotes[v.categoryId] = v.nominacionId;
+        for (const v of myVotesResp) {
+          myVotes[v.categoria.id] = v.nominacion.id;
         }
       } catch {}
+    }
+
+    // Voting progress (academy member + open)
+    if (isAcademyMember && isOpen) {
+      try {
+        votingStatus = await api.get<VotingStatus>(`/votes/me/status?idCeremonia=${id}`);
+      } catch {}
+    }
+
+    // Results (closed ceremony)
+    if (!isOpen) {
+      try {
+        results = await api.get<CeremonyResults>(`/ceremonies/${id}/results`);
+      } catch {}
+    }
+
+    // Leaderboard per category (admin always, all when closed)
+    if (isAdmin || !isOpen) {
+      const categoryIds = [...new Set(ceremony.nominaciones.map((n) => n.categoria.id))];
+      await Promise.all(
+        categoryIds.map(async (catId) => {
+          try {
+            leaderboards[catId] = await api.get<CategoryLeaderboard>(
+              `/ceremonies/${id}/categories/${catId}/leaderboard`
+            );
+          } catch {}
+        })
+      );
     }
   }
 
@@ -74,25 +124,14 @@ export default async function CeremonyPage({
   // Group nominations by category
   const groups = Object.values(
     ceremony.nominaciones.reduce<
-      Record<
-        string,
-        {
-          categoryId: string;
-          categoryName: string;
-          nominations: typeof ceremony.nominaciones;
-        }
-      >
+      Record<string, { categoryId: string; categoryName: string; nominations: typeof ceremony.nominaciones }>
     >((acc, nom) => {
       const catId = nom.categoria.id;
       if (!acc[catId])
-        acc[catId] = {
-          categoryId: catId,
-          categoryName: nom.categoria.nombre,
-          nominations: [],
-        };
+        acc[catId] = { categoryId: catId, categoryName: nom.categoria.nombre, nominations: [] };
       acc[catId].nominations.push(nom);
       return acc;
-    }, {}),
+    }, {})
   );
 
   return (
@@ -118,11 +157,7 @@ export default async function CeremonyPage({
 
         {isAdmin && (
           <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              render={<Link href={`/ceremonies/${id}/edit`} />}
-            >
+            <Button variant="outline" size="sm" render={<Link href={`/ceremonies/${id}/edit`} />}>
               Editar
             </Button>
             {isOpen && (
@@ -136,6 +171,9 @@ export default async function CeremonyPage({
         )}
       </div>
 
+      {/* Voting progress (academy member, open ceremony) */}
+      {votingStatus && <VotingProgress status={votingStatus} />}
+
       {/* Actuaciones */}
       {ceremony.actuaciones.length > 0 && (
         <section className="space-y-3">
@@ -145,9 +183,7 @@ export default async function CeremonyPage({
               <div key={i} className="border rounded-lg px-4 py-3">
                 <p className="font-medium text-sm">{act.tipoActuacion}</p>
                 <p className="text-sm text-muted-foreground">
-                  {act.artistas
-                    .map((a) => `${a.nombre} (${a.tipo})`)
-                    .join(", ")}
+                  {act.artistas.map((a) => `${a.nombre} (${a.tipo})`).join(", ")}
                 </p>
               </div>
             ))}
@@ -155,15 +191,22 @@ export default async function CeremonyPage({
         </section>
       )}
 
-      {/* Nominations */}
+      {/* Nominations + leaderboard */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">
-            Nominaciones
-            <span className="text-muted-foreground font-normal text-sm ml-2">
-              ({ceremony.nominaciones.length})
-            </span>
-          </h2>
+          <div>
+            <h2 className="text-lg font-medium">
+              Nominaciones
+              <span className="text-muted-foreground font-normal text-sm ml-2">
+                ({ceremony.nominaciones.length})
+              </span>
+            </h2>
+            {session && isOpen && totalVotosCeremonia > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {totalVotosCeremonia} {totalVotosCeremonia === 1 ? "voto emitido" : "votos emitidos"}
+              </p>
+            )}
+          </div>
           {isAdmin && isOpen && (
             <AddNominationModal
               ceremonyId={id}
@@ -186,35 +229,15 @@ export default async function CeremonyPage({
             userRole={session?.rol ?? null}
             isAdmin={isAdmin}
             groups={groups}
-            voteCounts={voteCounts}
+            voteCountMap={voteCountMap}
+            leaderboards={leaderboards}
             myVotes={myVotes}
           />
         )}
       </section>
 
-      {/* Awards */}
-      {ceremony.premios.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-medium">Premios</h2>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {ceremony.premios.map((award, i) => (
-              <div
-                key={i}
-                className="border rounded-lg px-4 py-3 bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900"
-              >
-                <p className="text-xs text-muted-foreground">
-                  {award.categoria.nombre}
-                </p>
-                <p className="font-medium mt-0.5">
-                  {award.ganador.tipo === NomineeType.PELICULA
-                    ? award.ganador.pelicula?.titulo
-                    : award.ganador.profesional?.nombreCompleto}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Results (closed ceremony) */}
+      {results && <CeremonyResultsView results={results} />}
     </div>
   );
 }

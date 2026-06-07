@@ -139,6 +139,84 @@ export interface VoteCount {
   votos: number;
 }
 
+// GET /votes?idCeremonia=X (new shape)
+export interface VoteCountsResponse {
+  ceremonia: { id: string; anio: number; lugar: string; estado: CeremonyState };
+  resumen: {
+    totalVotosCeremonia: number;
+    totalVotosResultado: number;
+    totalNominacionesConVotos: number;
+    filtroCategoriaId: string | null;
+  };
+  resultados: {
+    votos: number;
+    nominacion: {
+      id: string;
+      categoria: CategorySnapshot;
+      pelicula: MovieSnapshot | null;
+      profesional: ProfessionalSnapshot | null;
+      esGanador: boolean;
+    };
+  }[];
+}
+
+// GET /votes/me/status?idCeremonia=X
+export interface VotingStatus {
+  ceremonia: { id: string; anio: number; lugar: string; estado: CeremonyState };
+  resumen: {
+    totalCategorias: number;
+    totalCategoriasVotadas: number;
+    totalCategoriasPendientes: number;
+    completo: boolean;
+  };
+  votos: {
+    categoria: CategorySnapshot;
+    nominacion: { id: string; pelicula: MovieSnapshot | null; profesional: ProfessionalSnapshot | null; esGanador: boolean };
+    voto: { id: string; createdAt: string };
+  }[];
+  pendientes: CategorySnapshot[];
+}
+
+// GET /ceremonies/:id/results
+export interface CeremonyResultCategory {
+  categoria: CategorySnapshot;
+  totalVotosCategoria: number;
+  hayEmpateEnPrimerLugar: boolean;
+  ganador: { id: string; pelicula: MovieSnapshot | null; profesional: ProfessionalSnapshot | null; esGanador: boolean } | null;
+  nominaciones: {
+    votos: number;
+    nominacion: { id: string; categoria: CategorySnapshot; pelicula: MovieSnapshot | null; profesional: ProfessionalSnapshot | null; esGanador: boolean };
+  }[];
+}
+export interface CeremonyResults {
+  ceremonia: { id: string; anio: number; lugar: string; estado: CeremonyState };
+  resumen: {
+    totalVotosCeremonia: number;
+    totalCategorias: number;
+    totalCategoriasConVotos: number;
+    totalCategoriasConGanador: number;
+  };
+  categorias: CeremonyResultCategory[];
+}
+
+// GET /ceremonies/:id/categories/:id/leaderboard
+export interface LeaderboardEntry {
+  posicion: number;
+  votos: number;
+  nominacion: { id: string; categoria: CategorySnapshot; pelicula: MovieSnapshot | null; profesional: ProfessionalSnapshot | null; esGanador: boolean };
+}
+export interface CategoryLeaderboard {
+  ceremonia: { id: string; anio: number; lugar: string; estado: CeremonyState };
+  categoria: CategorySnapshot;
+  resumen: {
+    totalNominaciones: number;
+    totalVotosCategoria: number;
+    liderActualNominacionId: string | null;
+    hayEmpateEnPrimerLugar: boolean;
+  };
+  leaderboard: LeaderboardEntry[];
+}
+
 export interface AuthUser {
   id: string;
   email: string;

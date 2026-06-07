@@ -33,7 +33,7 @@ export function Navbar({ user }: NavbarProps) {
           <>
             <nav className="flex items-center gap-1 overflow-x-auto flex-1">
               {mainLinks.map(({ href, label }) => {
-                const active = pathname.startsWith(href);
+                const active = pathname === href || pathname.startsWith(href + "/");
                 return (
                   <Link
                     key={href}

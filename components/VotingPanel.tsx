@@ -1,13 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DeleteButton } from "@/components/DeleteButton";
-import { Nomination, VoteCount, UserRole } from "@/lib/types";
+import { Nomination, CategoryLeaderboard, UserRole } from "@/lib/types";
 import { castVote } from "@/lib/actions/votes";
 import { deleteNominacion } from "@/lib/actions/ceremonies";
 
@@ -23,19 +22,17 @@ interface Props {
   userRole: UserRole | null;
   isAdmin: boolean;
   groups: CategoryGroup[];
-  voteCounts: VoteCount[];
+  voteCountMap: Record<string, number>;
+  leaderboards: Record<string, CategoryLeaderboard>;
   myVotes: Record<string, string>;
 }
 
-export function VotingPanel({ ceremonyId, isOpen, userRole, isAdmin, groups, voteCounts, myVotes }: Props) {
+export function VotingPanel({
+  ceremonyId, isOpen, userRole, isAdmin, groups, voteCountMap, leaderboards, myVotes,
+}: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const canVote = isOpen && userRole === UserRole.ACADEMY_MEMBER;
-
-  const countMap: Record<string, number> = {};
-  for (const vc of voteCounts) {
-    countMap[vc.nominacionId] = vc.votos;
-  }
 
   function handleVote(nominacionId: string) {
     startTransition(async () => {
@@ -54,78 +51,93 @@ export function VotingPanel({ ceremonyId, isOpen, userRole, isAdmin, groups, vot
 
   return (
     <div className="space-y-4">
-      {groups.map((group) => (
-        <div key={group.categoryId} className="border rounded-lg overflow-hidden">
-          <div className="px-4 py-2.5 bg-muted/40 flex items-center justify-between">
-            <h3 className="font-medium text-sm">{group.categoryName}</h3>
-            {myVotes[group.categoryId] && (
-              <Badge variant="default" className="text-xs">Tu voto registrado</Badge>
-            )}
-          </div>
+      {groups.map((group) => {
+        const lb = leaderboards[group.categoryId];
+        const totalVotos = lb?.resumen.totalVotosCategoria ?? 0;
 
-          <div className="divide-y">
-            {group.nominations.map((nom) => {
-              const isMyVote = myVotes[group.categoryId] === nom._id;
-              const votes = countMap[nom._id] ?? 0;
+        return (
+          <div key={group.categoryId} className="border rounded-lg overflow-hidden">
+            <div className="px-4 py-2.5 bg-muted/40 flex items-center justify-between">
+              <h3 className="font-medium text-sm">{group.categoryName}</h3>
+              <div className="flex items-center gap-3">
+                {totalVotos > 0 && (
+                  <span className="text-xs text-muted-foreground">{totalVotos} votos</span>
+                )}
+                {myVotes[group.categoryId] && (
+                  <Badge variant="default" className="text-xs">Tu voto registrado</Badge>
+                )}
+              </div>
+            </div>
 
-              return (
-                <div key={nom._id} className="px-4 py-3 flex items-center gap-3">
-                  {/* Left: nominee info */}
-                  <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <span className={`text-sm truncate ${nom.esGanador ? "font-semibold" : ""}`}>
-                      {nomineeLabel(nom)}
-                    </span>
-                    <Badge variant="outline" className="text-xs shrink-0">
-                      {nom.pelicula ? "Película" : "Profesional"}
-                    </Badge>
-                    {nom.esGanador && (
-                      <Badge className="text-xs shrink-0 bg-yellow-500 text-black hover:bg-yellow-500">
-                        Ganador
-                      </Badge>
-                    )}
-                  </div>
+            <div className="divide-y">
+              {group.nominations.map((nom) => {
+                const isMyVote = myVotes[group.categoryId] === nom._id;
+                const votes = voteCountMap[nom._id] ?? 0;
+                const pct = totalVotos > 0 ? Math.round((votes / totalVotos) * 100) : 0;
+                const showBar = !!lb;
 
-                  {/* Right: votes + actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-muted-foreground w-16 text-right">
-                      {votes} voto{votes !== 1 ? "s" : ""}
-                    </span>
+                return (
+                  <div key={nom._id} className="px-4 py-3 space-y-1.5">
+                    <div className="flex items-center gap-3">
+                      {/* Left: nominee info */}
+                      <div className="flex-1 flex items-center gap-2 min-w-0">
+                        <span className={`text-sm truncate ${nom.esGanador ? "font-semibold" : ""}`}>
+                          {nomineeLabel(nom)}
+                        </span>
+                        <Badge variant="outline" className="text-xs shrink-0">
+                          {nom.pelicula ? "Película" : "Profesional"}
+                        </Badge>
+                        {nom.esGanador && (
+                          <Badge className="text-xs shrink-0 bg-yellow-500 text-black hover:bg-yellow-500">
+                            Ganador
+                          </Badge>
+                        )}
+                      </div>
 
-                    {canVote && (
-                      <Button
-                        size="sm"
-                        variant={isMyVote ? "default" : "outline"}
-                        onClick={() => handleVote(nom._id)}
-                        disabled={isPending}
-                      >
-                        {isMyVote ? "Votado" : "Votar"}
-                      </Button>
-                    )}
+                      {/* Right: votes + actions */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {showBar && (
+                          <span className="text-xs text-muted-foreground w-20 text-right">
+                            {votes} voto{votes !== 1 ? "s" : ""} ({pct}%)
+                          </span>
+                        )}
 
-                    {isAdmin && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          render={
-                            <Link href={`/ceremonies/${ceremonyId}/nominaciones/${nom._id}/edit`} />
-                          }
-                        >
-                          Editar
-                        </Button>
-                        <DeleteButton
-                          action={deleteNominacion.bind(null, ceremonyId, nom._id)}
-                          label="nominación"
+                        {canVote && (
+                          <Button
+                            size="sm"
+                            variant={isMyVote ? "default" : "outline"}
+                            onClick={() => handleVote(nom._id)}
+                            disabled={isPending}
+                          >
+                            {isMyVote ? "Votado" : "Votar"}
+                          </Button>
+                        )}
+
+                        {isAdmin && (
+                          <DeleteButton
+                            action={deleteNominacion.bind(null, ceremonyId, nom._id)}
+                            label="nominación"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Vote bar */}
+                    {showBar && (
+                      <div className="h-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary/50 rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
                         />
-                      </>
+                      </div>
                     )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

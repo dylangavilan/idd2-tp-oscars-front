@@ -13,6 +13,7 @@ import { createMovie, updateMovie } from "@/lib/actions/movies";
 const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor"] as const;
 
 interface CastRow {
+  id: string;
   profesionalId: string;
   rol: string;
 }
@@ -27,15 +28,16 @@ const selectClass =
 
 export function MovieForm({ professionals, movie }: Props) {
   const [cast, setCast] = useState<CastRow[]>(
-    movie?.reparto.map((m) => ({
+    movie?.reparto.map((m, i) => ({
+      id: `cast-init-${i}`,
       profesionalId: typeof m.profesionalId === "string" ? m.profesionalId : m.profesionalId._id,
       rol: m.rol,
-    })) ?? [{ profesionalId: "", rol: "" }]
+    })) ?? [{ id: `cast-${Date.now()}`, profesionalId: "", rol: "" }]
   );
   const [isPending, startTransition] = useTransition();
 
   function addCastRow() {
-    setCast((prev) => [...prev, { profesionalId: "", rol: "" }]);
+    setCast((prev) => [...prev, { id: `cast-${Date.now()}`, profesionalId: "", rol: "" }]);
   }
 
   function removeCastRow(i: number) {
@@ -109,7 +111,7 @@ export function MovieForm({ professionals, movie }: Props) {
           <p className="text-sm text-muted-foreground">Sin reparto registrado.</p>
         )}
         {cast.map((row, i) => (
-          <div key={i} className="flex gap-2 items-center">
+          <div key={row.id} className="flex gap-2 items-center">
             <select
               className={selectClass}
               value={row.profesionalId}

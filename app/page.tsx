@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Ceremony, CeremonyState } from "@/lib/types";
+import { Ceremony, CeremonyState, UserRole } from "@/lib/types";
 import { getSession } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,20 +30,22 @@ export default async function HomePage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {[
-          { href: "/ceremonies", label: "Ceremonias", desc: "Gestionar ediciones" },
-          { href: "/movies", label: "Películas", desc: "Catálogo de films" },
-          { href: "/professionals", label: "Profesionales", desc: "Actores y directores" },
-          { href: "/categories", label: "Categorías", desc: "Tipos de premios" },
-          { href: "/users", label: "Usuarios", desc: "Gestión de cuentas" },
-          { href: "/audit", label: "Auditoría", desc: "Log de actividad" },
-        ].map(({ href, label, desc }) => (
-          <Link key={href} href={href}>
-            <Card className="p-4 h-full hover:bg-accent transition-colors cursor-pointer">
-              <p className="font-medium text-sm">{label}</p>
-              <p className="text-xs text-muted-foreground mt-1">{desc}</p>
-            </Card>
-          </Link>
-        ))}
+          { href: "/ceremonies", label: "Ceremonias", desc: "Gestionar ediciones", adminOnly: false },
+          { href: "/movies", label: "Películas", desc: "Catálogo de films", adminOnly: false },
+          { href: "/professionals", label: "Profesionales", desc: "Actores y directores", adminOnly: false },
+          { href: "/categories", label: "Categorías", desc: "Tipos de premios", adminOnly: false },
+          { href: "/votes", label: "Votaciones", desc: "Votar nominaciones", adminOnly: false },
+          { href: "/audit", label: "Auditoría", desc: "Log de actividad", adminOnly: true },
+        ]
+          .filter(({ adminOnly }) => !adminOnly || session?.rol === UserRole.ADMIN)
+          .map(({ href, label, desc }) => (
+            <Link key={href} href={href}>
+              <Card className="p-4 h-full hover:bg-accent transition-colors cursor-pointer">
+                <p className="font-medium text-sm">{label}</p>
+                <p className="text-xs text-muted-foreground mt-1">{desc}</p>
+              </Card>
+            </Link>
+          ))}
       </div>
 
       {recentCeremonies.length > 0 && (
