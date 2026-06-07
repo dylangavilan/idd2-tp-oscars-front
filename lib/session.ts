@@ -15,7 +15,6 @@ export async function getToken(): Promise<string | undefined> {
 
 export async function getSession(): Promise<AuthUser | null> {
   const token = await getToken();
-  console.log(token);
   if (!token) return null;
   try {
     const res = await fetch(`${BASE_URL}/auth/me`, {

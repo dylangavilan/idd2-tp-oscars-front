@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { api } from "@/lib/api";
 import { saveToken, clearToken } from "@/lib/session";
@@ -18,6 +19,7 @@ export async function login(
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Credenciales inválidas" };
   }
+  revalidatePath("/", "layout");
   redirect("/");
 }
 
@@ -26,5 +28,6 @@ export async function logout(): Promise<void> {
     await api.post("/auth/logout", {});
   } catch {}
   await clearToken();
+  revalidatePath("/", "layout");
   redirect("/login");
 }
