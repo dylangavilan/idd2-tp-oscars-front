@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createCategory } from "@/lib/actions/categories";
 
-export default function NewCategoryPage() {
+export default async function NewCategoryPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>

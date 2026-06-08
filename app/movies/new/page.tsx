@@ -3,6 +3,7 @@ import { Professional } from "@/lib/types";
 import { MovieForm } from "@/components/MovieForm";
 
 export default async function NewMoviePage() {
+
   const professionals = await api.get<Professional[]>("/professionals");
 
   return (

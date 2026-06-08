@@ -1,5 +1,7 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
-import { AuthUser } from "./types";
+import { redirect } from "next/navigation";
+import { AuthUser, UserRole } from "./types";
 
 const TOKEN_COOKIE = "oscar_token";
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
@@ -13,7 +15,7 @@ export async function getToken(): Promise<string | undefined> {
   }
 }
 
-export async function getSession(): Promise<AuthUser | null> {
+export const getSession = cache(async (): Promise<AuthUser | null> => {
   const token = await getToken();
   if (!token) return null;
   try {
@@ -27,7 +29,7 @@ export async function getSession(): Promise<AuthUser | null> {
   } catch {
     return null;
   }
-}
+});
 
 export async function saveToken(token: string): Promise<void> {
   const store = await cookies();
@@ -38,6 +40,22 @@ export async function saveToken(token: string): Promise<void> {
     path: "/",
     sameSite: "lax",
   });
+}
+
+export async function getAuthContext() {
+  const session = await getSession();
+  return {
+    session,
+    isAdmin: session?.rol === UserRole.ADMIN,
+    isAcademyMember: session?.rol === UserRole.ACADEMY_MEMBER,
+    isCommonUser: session?.rol === UserRole.COMMON_USER,
+  };
+}
+
+export async function requireAdmin(): Promise<AuthUser> {
+  const session = await getSession();
+  if (session?.rol !== UserRole.ADMIN) redirect("/");
+  return session;
 }
 
 export async function clearToken(): Promise<void> {

@@ -13,6 +13,7 @@ export default async function EditCategoryPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+
   const { id } = await params;
 
   let category: Category;

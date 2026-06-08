@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createCeremony } from "@/lib/actions/ceremonies";
 
-export default function NewCeremonyPage() {
+export default async function NewCeremonyPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>

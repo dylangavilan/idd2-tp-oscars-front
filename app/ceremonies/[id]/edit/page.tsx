@@ -12,6 +12,7 @@ export default async function EditCeremonyPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+
   const { id } = await params;
 
   let ceremony: Ceremony;
@@ -28,7 +29,9 @@ export default async function EditCeremonyPage({
     <div className="max-w-lg space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Editar ceremonia</h1>
-        <p className="text-sm text-muted-foreground mt-1">Oscar {ceremony.anio}</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Oscar {ceremony.anio}
+        </p>
       </div>
 
       <form action={action} className="space-y-4">
@@ -45,15 +48,29 @@ export default async function EditCeremonyPage({
         </div>
         <div className="space-y-2">
           <Label htmlFor="fecha">Fecha de la ceremonia</Label>
-          <Input id="fecha" name="fecha" type="date" defaultValue={fechaISO} required />
+          <Input
+            id="fecha"
+            name="fecha"
+            type="date"
+            defaultValue={fechaISO}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="lugar">Lugar</Label>
-          <Input id="lugar" name="lugar" defaultValue={ceremony.lugar} required />
+          <Input
+            id="lugar"
+            name="lugar"
+            defaultValue={ceremony.lugar}
+            required
+          />
         </div>
         <div className="flex gap-3 pt-2">
           <Button type="submit">Guardar cambios</Button>
-          <Button variant="outline" render={<Link href={`/ceremonies/${id}`} />}>
+          <Button
+            variant="outline"
+            render={<Link href={`/ceremonies/${id}`} />}
+          >
             Cancelar
           </Button>
         </div>

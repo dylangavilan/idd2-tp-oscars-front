@@ -14,7 +14,7 @@ import {
   CeremonyState,
   NomineeType,
 } from "@/lib/types";
-import { getSession } from "@/lib/session";
+import { getAuthContext } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VotingPanel } from "@/components/VotingPanel";
@@ -37,9 +37,9 @@ export default async function CeremonyPage({
     notFound();
   }
 
-  const session = await getSession();
-  const isAdmin = session?.rol === UserRole.ADMIN;
-  const isAcademyMember = session?.rol === UserRole.ACADEMY_MEMBER;
+  const { session, isAdmin, isAcademyMember } = await getAuthContext();
+  
+  
   const isOpen = ceremony.estado === CeremonyState.ABIERTA;
 
   // Vote counts (flat map por nominación para VotingPanel)

@@ -6,7 +6,7 @@ import { createProfessional } from "@/lib/actions/professionals";
 
 const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor"];
 
-export default function NewProfessionalPage() {
+export default async function NewProfessionalPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>

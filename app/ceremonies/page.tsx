@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Ceremony, CeremonyState } from "@/lib/types";
+import { Ceremony, CeremonyState, UserRole } from "@/lib/types";
+import { getAuthContext } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,6 +16,9 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteCeremony } from "@/lib/actions/ceremonies";
 
 export default async function CeremoniesPage() {
+  const { session, isAdmin, isAcademyMember } = await getAuthContext();
+  
+
   const ceremonies = await api.get<Ceremony[]>("/ceremonies");
 
   return (
@@ -23,10 +27,15 @@ export default async function CeremoniesPage() {
         <div>
           <h1 className="text-2xl font-semibold">Ceremonias</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {ceremonies.length} ceremonia{ceremonies.length !== 1 ? "s" : ""} registrada{ceremonies.length !== 1 ? "s" : ""}
+            {ceremonies.length} ceremonia{ceremonies.length !== 1 ? "s" : ""}{" "}
+            registrada{ceremonies.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button render={<Link href="/ceremonies/new" />}>Nueva ceremonia</Button>
+        {isAdmin && (
+          <Button render={<Link href="/ceremonies/new" />}>
+            Nueva ceremonia
+          </Button>
+        )}
       </div>
 
       {ceremonies.length === 0 ? (
@@ -50,20 +59,41 @@ export default async function CeremoniesPage() {
               {ceremonies.map((c) => (
                 <TableRow key={c._id}>
                   <TableCell className="font-semibold">{c.anio}</TableCell>
-                  <TableCell>{new Date(c.fecha).toLocaleDateString("es-AR")}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.lugar}</TableCell>
                   <TableCell>
-                    <Badge variant={c.estado === CeremonyState.CERRADA ? "secondary" : "default"}>
-                      {c.estado === CeremonyState.CERRADA ? "Cerrada" : "Abierta"}
+                    {new Date(c.fecha).toLocaleDateString("es-AR")}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {c.lugar}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        c.estado === CeremonyState.CERRADA
+                          ? "secondary"
+                          : "default"
+                      }
+                    >
+                      {c.estado === CeremonyState.CERRADA
+                        ? "Cerrada"
+                        : "Abierta"}
                     </Badge>
                   </TableCell>
                   <TableCell>{c.nominaciones.length}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" render={<Link href={`/ceremonies/${c._id}`} />}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        render={<Link href={`/ceremonies/${c._id}`} />}
+                      >
                         Ver
                       </Button>
-                      <DeleteButton action={deleteCeremony.bind(null, c._id)} label="ceremonia" />
+                      {isAdmin && (
+                        <DeleteButton
+                          action={deleteCeremony.bind(null, c._id)}
+                          label="ceremonia"
+                        />
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

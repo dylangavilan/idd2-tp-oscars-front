@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Movie } from "@/lib/types";
+import { Movie, UserRole } from "@/lib/types";
+import { getAuthContext } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -14,6 +15,9 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteMovie } from "@/lib/actions/movies";
 
 export default async function MoviesPage() {
+  const { session, isAdmin, isAcademyMember } = await getAuthContext();
+  
+
   const movies = await api.get<Movie[]>("/movies");
 
   return (
@@ -25,7 +29,9 @@ export default async function MoviesPage() {
             {movies.length} película{movies.length !== 1 ? "s" : ""} registrada{movies.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button render={<Link href="/movies/new" />}>Nueva película</Button>
+        {isAdmin && (
+          <Button render={<Link href="/movies/new" />}>Nueva película</Button>
+        )}
       </div>
 
       {movies.length === 0 ? (
@@ -41,7 +47,7 @@ export default async function MoviesPage() {
                 <TableHead>Año</TableHead>
                 <TableHead>Género</TableHead>
                 <TableHead>Reparto</TableHead>
-                <TableHead className="w-30">Acciones</TableHead>
+                {isAdmin && <TableHead className="w-30">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -53,14 +59,16 @@ export default async function MoviesPage() {
                   <TableCell className="text-muted-foreground">
                     {movie.reparto.length} miembro{movie.reparto.length !== 1 ? "s" : ""}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" render={<Link href={`/movies/${movie._id}/edit`} />}>
-                        Editar
-                      </Button>
-                      <DeleteButton action={deleteMovie.bind(null, movie._id)} label="película" />
-                    </div>
-                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" render={<Link href={`/movies/${movie._id}/edit`} />}>
+                          Editar
+                        </Button>
+                        <DeleteButton action={deleteMovie.bind(null, movie._id)} label="película" />
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

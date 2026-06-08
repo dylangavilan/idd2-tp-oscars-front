@@ -8,6 +8,7 @@ export default async function EditMoviePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+
   const { id } = await params;
 
   let movie: Movie;

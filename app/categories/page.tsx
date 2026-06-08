@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Category } from "@/lib/types";
+import { Category, UserRole } from "@/lib/types";
+import { getAuthContext } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -14,6 +15,9 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteCategory } from "@/lib/actions/categories";
 
 export default async function CategoriesPage() {
+  const { session, isAdmin, isAcademyMember } = await getAuthContext();
+  
+
   const categories = await api.get<Category[]>("/categories");
 
   return (
@@ -25,9 +29,11 @@ export default async function CategoriesPage() {
             {categories.length} categoría{categories.length !== 1 ? "s" : ""} registrada{categories.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button render={<Link href="/categories/new" />}>
-          Nueva categoría
-        </Button>
+        {isAdmin && (
+          <Button render={<Link href="/categories/new" />}>
+            Nueva categoría
+          </Button>
+        )}
       </div>
 
       {categories.length === 0 ? (
@@ -41,7 +47,7 @@ export default async function CategoriesPage() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
-                <TableHead className="w-30">Acciones</TableHead>
+                {isAdmin && <TableHead className="w-30">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -51,17 +57,19 @@ export default async function CategoriesPage() {
                   <TableCell className="text-muted-foreground">
                     {cat.descripcion || "—"}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" render={<Link href={`/categories/${cat._id}/edit`} />}>
-                        Editar
-                      </Button>
-                      <DeleteButton
-                        action={deleteCategory.bind(null, cat._id)}
-                        label="categoría"
-                      />
-                    </div>
-                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" render={<Link href={`/categories/${cat._id}/edit`} />}>
+                          Editar
+                        </Button>
+                        <DeleteButton
+                          action={deleteCategory.bind(null, cat._id)}
+                          label="categoría"
+                        />
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

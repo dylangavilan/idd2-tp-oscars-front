@@ -1,36 +1,42 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Ceremony, VoteCount, UserRole, CeremonyState } from "@/lib/types";
-import { getSession } from "@/lib/session";
+import { Ceremony, VoteCountsResponse, CeremonyState } from "@/lib/types";
+import { getAuthContext } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default async function VotesPage() {
-  const session = await getSession();
-  const isAcademyMember = session?.rol === UserRole.ACADEMY_MEMBER;
+  const { isAcademyMember, isCommonUser } = await getAuthContext();
 
   let ceremonies: Ceremony[] = [];
   try {
     ceremonies = await api.get<Ceremony[]>("/ceremonies");
   } catch {}
 
-  const open = ceremonies.filter((c) => c.estado === CeremonyState.ABIERTA).sort((a, b) => b.anio - a.anio);
-  const closed = ceremonies.filter((c) => c.estado === CeremonyState.CERRADA).sort((a, b) => b.anio - a.anio);
+  const open = ceremonies
+    .filter((c) => c.estado === CeremonyState.ABIERTA)
+    .sort((a, b) => b.anio - a.anio);
+  const closed = ceremonies
+    .filter((c) => c.estado === CeremonyState.CERRADA)
+    .sort((a, b) => b.anio - a.anio);
 
   // Fetch vote counts for open ceremonies (to show tallies)
-  const voteCountsByCeremony: Record<string, VoteCount[]> = {};
+  const totalVotesByCeremony: Record<string, number> = {};
   await Promise.all(
     open.map(async (c) => {
       try {
-        voteCountsByCeremony[c._id] = await api.get<VoteCount[]>(`/votes?idCeremonia=${c._id}`);
+        const resp = await api.get<VoteCountsResponse>(
+          `/votes?idCeremonia=${c._id}`,
+        );
+        totalVotesByCeremony[c._id] = resp.resumen.totalVotosCeremonia;
       } catch {
-        voteCountsByCeremony[c._id] = [];
+        totalVotesByCeremony[c._id] = 0;
       }
-    })
+    }),
   );
 
   const totalVotes = (ceremonyId: string) =>
-    (voteCountsByCeremony[ceremonyId] ?? []).reduce((sum, v) => sum + v.votos, 0);
+    totalVotesByCeremony[ceremonyId] ?? 0;
 
   const categoryCount = (c: Ceremony) => {
     const cats = new Set(c.nominaciones.map((n) => n.categoria.id));
@@ -47,6 +53,13 @@ export default async function VotesPage() {
             : "Estado de votaciones por ceremonia"}
         </p>
       </div>
+
+      {isCommonUser && (
+        <div className="rounded-lg border border-muted bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          Tu cuenta no tiene permisos para votar. Solo los miembros de la
+          academia pueden emitir votos.
+        </div>
+      )}
 
       {/* Open ceremonies */}
       <section className="space-y-4">
@@ -71,7 +84,9 @@ export default async function VotesPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">Oscar {c.anio}</span>
-                      <Badge variant="default" className="text-xs">Abierta</Badge>
+                      <Badge variant="default" className="text-xs">
+                        Abierta
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {c.lugar} &mdash;{" "}
@@ -117,7 +132,9 @@ export default async function VotesPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">Oscar {c.anio}</span>
-                    <Badge variant="secondary" className="text-xs">Cerrada</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      Cerrada
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">{c.lugar}</p>
                   <div className="flex gap-4 text-xs text-muted-foreground">

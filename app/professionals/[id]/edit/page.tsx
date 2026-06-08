@@ -14,6 +14,7 @@ export default async function EditProfessionalPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+
   const { id } = await params;
 
   let professional: Professional;
