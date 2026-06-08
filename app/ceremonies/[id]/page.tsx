@@ -23,15 +23,40 @@ import { AddNominationModal } from "@/components/AddNominationModal";
 import { MusicalPerformancesSection } from "@/components/MusicalPerformancesSection";
 import { closeCeremony } from "@/lib/actions/ceremonies";
 
+interface TieCategoryDetail {
+  categoryId: string;
+  categoryName: string;
+  votes: number;
+  nominations: {
+    id: string;
+    label: string;
+    tipo: "pelicula" | "profesional";
+  }[];
+}
+
 export default async function CeremonyPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ toastMessage?: string; type?: "alert" | "info" | "warn" | "success" }>;
+  searchParams?: Promise<{
+    toastMessage?: string;
+    type?: "alert" | "info" | "warn" | "success";
+    tieDetails?: string;
+  }>;
 }) {
   const { id } = await params;
   const toastParams = (await searchParams) ?? {};
+  let tieCategories: TieCategoryDetail[] = [];
+
+  if (toastParams.tieDetails) {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(toastParams.tieDetails)) as {
+        categories?: TieCategoryDetail[];
+      };
+      tieCategories = parsed.categories ?? [];
+    } catch {}
+  }
 
   let ceremony: Ceremony;
   try {
@@ -180,6 +205,41 @@ export default async function CeremonyPage({
 
       {/* Voting progress (academy member, open ceremony) */}
       {votingStatus && <VotingProgress status={votingStatus} />}
+
+      {isAdmin && isOpen && tieCategories.length > 0 && (
+        <section className="rounded-[1.6rem] border border-red-500/20 bg-red-500/8 px-5 py-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge className="border-red-500/20 bg-red-500/12 text-red-700 dark:text-red-300">
+                Cierre bloqueado
+              </Badge>
+              <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                La ceremonia no puede cerrarse mientras existan empates en primer lugar.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {tieCategories.map((item) => (
+                <div
+                  key={item.categoryId}
+                  className="rounded-2xl border border-red-500/15 bg-background/75 px-4 py-3"
+                >
+                  <p className="text-sm font-semibold text-foreground">{item.categoryName}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {item.votes} votos en empate entre {item.nominations.length} nominaciones.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.nominations.map((nomination) => (
+                      <Badge key={nomination.id} variant="outline" className="border-red-500/20 bg-red-500/6">
+                        {nomination.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <MusicalPerformancesSection
         ceremonyId={id}

@@ -5,7 +5,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 export class ApiError extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
+    public details?: unknown
   ) {
     super(message);
   }
@@ -31,7 +32,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       typeof json?.error === "string"
         ? json.error
         : json?.error?.message || "Error inesperado";
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, json?.error?.details);
   }
 
   return json.data as T;
