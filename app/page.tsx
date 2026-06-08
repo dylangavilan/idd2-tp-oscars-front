@@ -21,6 +21,7 @@ export default async function HomePage() {
     { href: "/professionals", label: "Profesionales", desc: "Actores, directores y productores", adminOnly: false },
     { href: "/categories", label: "Categorias/Premios", desc: "Definir los premios disponibles", adminOnly: false },
     { href: "/votes", label: "Votaciones", desc: "Emitir y consultar votos", adminOnly: false },
+    { href: "/history", label: "Historicos", desc: "Explorar ganadores y rankings consolidados", adminOnly: false },
     { href: "/audit", label: "Auditoria", desc: "Trazabilidad de acciones", adminOnly: true },
   ];
 
