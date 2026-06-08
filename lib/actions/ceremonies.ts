@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 
 export async function createCeremony(formData: FormData): Promise<void> {
   await api.post("/ceremonies", {
@@ -30,7 +30,25 @@ export async function deleteCeremony(id: string): Promise<void> {
 }
 
 export async function closeCeremony(id: string): Promise<void> {
-  await api.post(`/ceremonies/${id}/close`, {});
+  try {
+    await api.post(`/ceremonies/${id}/close`, {});
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) {
+      const query = new URLSearchParams({
+        toastMessage: error.message,
+        type: "alert",
+      });
+
+      if (error.details) {
+        query.set("tieDetails", encodeURIComponent(JSON.stringify(error.details)));
+      }
+
+      redirect(`/ceremonies/${id}?${query.toString()}`);
+    }
+
+    throw error;
+  }
+
   revalidatePath("/ceremonies");
   revalidatePath(`/ceremonies/${id}`);
   redirect(`/ceremonies/${id}?toastMessage=Ceremonia%20cerrada&type=success`);

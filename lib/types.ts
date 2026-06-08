@@ -259,3 +259,47 @@ export interface AuditLog {
   fecha: string;
   email?: string;
 }
+
+export interface HistoryWinner {
+  ceremonyId: string;
+  anio: number;
+  fecha: string;
+  lugar: string;
+  categoryId: string;
+  categoryName: string;
+  winnerType: NomineeType;
+  winnerName: string;
+  movieId: string | null;
+  professionalId: string | null;
+}
+
+export interface TopNominatedProfessional {
+  professionalId: string;
+  nombreCompleto: string;
+  nominationCount: number;
+}
+
+export interface TopAwardedProfessional {
+  professionalId: string;
+  nombreCompleto: string;
+  awardCount: number;
+  winningVotesTotal: number;
+}
+
+export interface TopVotedCeremony {
+  ceremonyId: string;
+  anio: number;
+  fecha: string;
+  lugar: string;
+  totalVotes: number;
+}
+
+export interface TopParticipantCategory {
+  ceremonyId: string;
+  categoryId: string;
+  anio: number;
+  fecha: string;
+  lugar: string;
+  categoryName: string;
+  participantCount: number;
+}

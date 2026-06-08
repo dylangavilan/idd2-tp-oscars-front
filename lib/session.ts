@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthUser, UserRole } from "./types";
 
 const TOKEN_COOKIE = "oscar_token";
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 export async function getToken(): Promise<string | undefined> {
   try {
