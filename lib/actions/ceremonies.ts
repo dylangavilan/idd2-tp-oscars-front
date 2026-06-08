@@ -42,6 +42,11 @@ interface NominationPayload {
   profesional?: { id: string; nombreCompleto: string };
 }
 
+export interface PerformancePayload {
+  tipoActuacion: string;
+  artistas: { nombre: string; tipo: string }[];
+}
+
 export async function addNominacion(ceremonyId: string, data: NominationPayload): Promise<void> {
   await api.post(`/ceremonies/${ceremonyId}/nominaciones`, data);
   revalidatePath(`/ceremonies/${ceremonyId}`);
@@ -59,5 +64,24 @@ export async function updateNominacion(
 
 export async function deleteNominacion(ceremonyId: string, nomId: string): Promise<void> {
   await api.delete(`/ceremonies/${ceremonyId}/nominaciones/${nomId}`);
+  revalidatePath(`/ceremonies/${ceremonyId}`);
+}
+
+export async function addActuacion(ceremonyId: string, data: PerformancePayload): Promise<void> {
+  await api.post(`/ceremonies/${ceremonyId}/actuaciones`, data);
+  revalidatePath(`/ceremonies/${ceremonyId}`);
+}
+
+export async function updateActuacion(
+  ceremonyId: string,
+  actuacionId: string,
+  data: PerformancePayload
+): Promise<void> {
+  await api.put(`/ceremonies/${ceremonyId}/actuaciones/${actuacionId}`, data);
+  revalidatePath(`/ceremonies/${ceremonyId}`);
+}
+
+export async function deleteActuacion(ceremonyId: string, actuacionId: string): Promise<void> {
+  await api.delete(`/ceremonies/${ceremonyId}/actuaciones/${actuacionId}`);
   revalidatePath(`/ceremonies/${ceremonyId}`);
 }

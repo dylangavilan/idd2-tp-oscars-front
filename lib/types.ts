@@ -57,13 +57,33 @@ export interface Ceremony {
 
 export interface Performance {
   _id?: string;
-  tipoActuacion: string;
+  tipoActuacion: PerformanceType;
   artistas: Artist[];
 }
 
+export const PerformanceType = {
+  MUSICAL: "Musical",
+  CANCION_NOMINADA: "Cancion nominada",
+  HOMENAJE: "Homenaje",
+  APERTURA: "Apertura",
+  INTERMEDIO: "Intermedio",
+  CIERRE: "Cierre",
+} as const;
+export type PerformanceType = (typeof PerformanceType)[keyof typeof PerformanceType];
+
+export const ArtistType = {
+  CANTANTE: "Cantante",
+  SOLISTA: "Solista",
+  BANDA: "Banda",
+  ORQUESTA: "Orquesta",
+  ACTOR_CANTANTE: "Actor/Cantante",
+  CORO: "Coro",
+} as const;
+export type ArtistType = (typeof ArtistType)[keyof typeof ArtistType];
+
 export interface Artist {
   nombre: string;
-  tipo: "Cantante" | "Banda" | "Orquesta";
+  tipo: ArtistType;
 }
 
 export interface Nomination {

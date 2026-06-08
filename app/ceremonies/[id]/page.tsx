@@ -10,9 +10,7 @@ import {
   Category,
   Movie,
   Professional,
-  UserRole,
   CeremonyState,
-  NomineeType,
 } from "@/lib/types";
 import { getAuthContext } from "@/lib/session";
 import { FlashToast } from "@/components/FlashToast";
@@ -22,6 +20,7 @@ import { VotingPanel } from "@/components/VotingPanel";
 import { VotingProgress } from "@/components/VotingProgress";
 import { CeremonyResultsView } from "@/components/CeremonyResultsView";
 import { AddNominationModal } from "@/components/AddNominationModal";
+import { MusicalPerformancesSection } from "@/components/MusicalPerformancesSection";
 import { closeCeremony } from "@/lib/actions/ceremonies";
 
 export default async function CeremonyPage({
@@ -182,22 +181,12 @@ export default async function CeremonyPage({
       {/* Voting progress (academy member, open ceremony) */}
       {votingStatus && <VotingProgress status={votingStatus} />}
 
-      {/* Actuaciones */}
-      {ceremony.actuaciones.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-medium">Actuaciones musicales</h2>
-          <div className="grid gap-2">
-            {ceremony.actuaciones.map((act, i) => (
-              <div key={i} className="border rounded-lg px-4 py-3">
-                <p className="font-medium text-sm">{act.tipoActuacion}</p>
-                <p className="text-sm text-muted-foreground">
-                  {act.artistas.map((a) => `${a.nombre} (${a.tipo})`).join(", ")}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <MusicalPerformancesSection
+        ceremonyId={id}
+        performances={ceremony.actuaciones}
+        isAdmin={isAdmin}
+        isOpen={isOpen}
+      />
 
       {/* Nominations + leaderboard */}
       <section className="space-y-4">

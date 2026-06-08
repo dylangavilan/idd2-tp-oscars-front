@@ -161,7 +161,7 @@ export function VotingPanel({
                     {showBar && (
                       <div className="h-1 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary/50 rounded-full transition-all duration-500"
+                          className="h-full bg-green-500/70 rounded-full transition-all duration-500"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
