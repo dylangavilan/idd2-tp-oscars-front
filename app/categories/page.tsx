@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Category, UserRole } from "@/lib/types";
+import { Category } from "@/lib/types";
 import { getAuthContext } from "@/lib/session";
 import { FlashToast } from "@/components/FlashToast";
 import { Button } from "@/components/ui/button";
@@ -21,39 +21,38 @@ export default async function CategoriesPage({
   searchParams?: Promise<{ toastMessage?: string; type?: "alert" | "info" | "warn" | "success" }>;
 }) {
   const params = (await searchParams) ?? {};
-  const { session, isAdmin, isAcademyMember } = await getAuthContext();
-  
-
+  const { isAdmin } = await getAuthContext();
   const categories = await api.get<Category[]>("/categories");
 
   return (
     <div className="space-y-6">
       <FlashToast message={params.toastMessage} type={params.type} />
+
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Categorías</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {categories.length} categoría{categories.length !== 1 ? "s" : ""} registrada{categories.length !== 1 ? "s" : ""}
+          <h1 className="text-2xl font-semibold">Categorias/Premios</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {categories.length} categoria{categories.length !== 1 ? "s" : ""} registrada
+            {categories.length !== 1 ? "s" : ""}
           </p>
         </div>
+
         {isAdmin && (
-          <Button render={<Link href="/categories/new" />}>
-            Nueva categoría
-          </Button>
+          <Button render={<Link href="/categories/new" />}>Nueva categoria</Button>
         )}
       </div>
 
       {categories.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground border rounded-lg">
-          No hay categorías registradas todavía.
+        <div className="rounded-lg border py-16 text-center text-muted-foreground">
+          No hay categorias registradas todavia.
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
-                <TableHead>Descripción</TableHead>
+                <TableHead>Descripcion</TableHead>
                 {isAdmin && <TableHead className="w-30">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
@@ -61,19 +60,18 @@ export default async function CategoriesPage({
               {categories.map((cat) => (
                 <TableRow key={cat._id}>
                   <TableCell className="font-medium">{cat.nombre}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {cat.descripcion || "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{cat.descripcion || "-"}</TableCell>
                   {isAdmin && (
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" render={<Link href={`/categories/${cat._id}/edit`} />}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          render={<Link href={`/categories/${cat._id}/edit`} />}
+                        >
                           Editar
                         </Button>
-                        <DeleteButton
-                          action={deleteCategory.bind(null, cat._id)}
-                          label="categoría"
-                        />
+                        <DeleteButton action={deleteCategory.bind(null, cat._id)} label="categoria" />
                       </div>
                     </TableCell>
                   )}

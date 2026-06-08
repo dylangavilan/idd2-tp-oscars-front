@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 
 const mainLinks = [
   { href: "/ceremonies", label: "Ceremonias" },
-  { href: "/movies", label: "Películas" },
+  { href: "/movies", label: "Peliculas" },
   { href: "/professionals", label: "Profesionales" },
-  { href: "/categories", label: "Categorías" },
+  { href: "/categories", label: "Categorias/Premios" },
   { href: "/votes", label: "Votaciones" },
 ];
 
@@ -24,66 +24,70 @@ export function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="border-b bg-card">
-      <div className="container mx-auto px-4 max-w-6xl flex items-center gap-4 h-14">
-        <Link href="/" className="font-semibold text-sm tracking-tight shrink-0 hover:opacity-80 transition-opacity">
+      <div className="container mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
+        <Link
+          href="/"
+          className="shrink-0 text-sm font-semibold tracking-tight transition-opacity hover:opacity-80"
+        >
           Premios Oscar
         </Link>
 
         {user ? (
           <>
-            <nav className="flex items-center gap-1 overflow-x-auto flex-1">
+            <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
               {mainLinks.map(({ href, label }) => {
                 const active = pathname === href || pathname.startsWith(href + "/");
+
                 return (
                   <Link
                     key={href}
                     href={href}
                     className={cn(
-                      "px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors",
+                      "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors",
                       active
                         ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                   >
                     {label}
                   </Link>
                 );
               })}
+
               {user.rol === UserRole.ADMIN && (
                 <Link
                   href="/audit"
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors",
+                    "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors",
                     pathname.startsWith("/audit")
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
-                  Auditoría
+                  Auditoria
                 </Link>
               )}
             </nav>
 
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {user.nombre} {user.apellido}{" "}
-                <span className="opacity-50 text-xs">({user.rol})</span>
+            <div className="shrink-0 flex items-center gap-3">
+              <span className="hidden text-sm text-muted-foreground sm:block">
+                {user.nombre} {user.apellido} <span className="text-xs opacity-50">({user.rol})</span>
               </span>
               <form action={logout}>
                 <Button type="submit" variant="outline" size="sm">
-                  Cerrar sesión
+                  Cerrar sesion
                 </Button>
               </form>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex justify-end gap-2">
+          <div className="flex flex-1 justify-end gap-2">
             <Link href="/register">
               <Button size="sm">Crear cuenta</Button>
             </Link>
             <Link href="/login">
               <Button variant="outline" size="sm">
-                Iniciar sesión
+                Iniciar sesion
               </Button>
             </Link>
           </div>

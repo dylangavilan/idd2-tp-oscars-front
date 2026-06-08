@@ -20,29 +20,28 @@ export default async function HomePage() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Sistema de Premios Oscar</h1>
         {session && (
-          <p className="text-muted-foreground mt-2">
-            Bienvenido, <span className="font-medium">{session.nombre} {session.apellido}</span>
-            {" "}
+          <p className="mt-2 text-muted-foreground">
+            Bienvenido, <span className="font-medium">{session.nombre} {session.apellido}</span>{" "}
             <span className="text-xs opacity-60">({session.rol})</span>
           </p>
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {[
           { href: "/ceremonies", label: "Ceremonias", desc: "Gestionar ediciones", adminOnly: false },
-          { href: "/movies", label: "Películas", desc: "Catálogo de films", adminOnly: false },
+          { href: "/movies", label: "Peliculas", desc: "Catalogo de films", adminOnly: false },
           { href: "/professionals", label: "Profesionales", desc: "Actores y directores", adminOnly: false },
-          { href: "/categories", label: "Categorías", desc: "Tipos de premios", adminOnly: false },
+          { href: "/categories", label: "Categorias/Premios", desc: "Tipos de premios", adminOnly: false },
           { href: "/votes", label: "Votaciones", desc: "Votar nominaciones", adminOnly: false },
-          { href: "/audit", label: "Auditoría", desc: "Log de actividad", adminOnly: true },
+          { href: "/audit", label: "Auditoria", desc: "Log de actividad", adminOnly: true },
         ]
           .filter(({ adminOnly }) => !adminOnly || session?.rol === UserRole.ADMIN)
           .map(({ href, label, desc }) => (
             <Link key={href} href={href}>
-              <Card className="p-4 h-full hover:bg-accent transition-colors cursor-pointer">
-                <p className="font-medium text-sm">{label}</p>
-                <p className="text-xs text-muted-foreground mt-1">{desc}</p>
+              <Card className="h-full cursor-pointer p-4 transition-colors hover:bg-accent">
+                <p className="text-sm font-medium">{label}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
               </Card>
             </Link>
           ))}
@@ -54,15 +53,13 @@ export default async function HomePage() {
           <div className="grid gap-3">
             {recentCeremonies.map((c) => (
               <Link key={c._id} href={`/ceremonies/${c._id}`}>
-                <div className="border rounded-lg px-4 py-3 flex items-center justify-between hover:bg-accent transition-colors">
+                <div className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-accent">
                   <div>
                     <span className="font-medium">Oscar {c.anio}</span>
-                    <span className="text-sm text-muted-foreground ml-3">{c.lugar}</span>
+                    <span className="ml-3 text-sm text-muted-foreground">{c.lugar}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">
-                      {c.nominaciones.length} nominaciones
-                    </span>
+                    <span className="text-sm text-muted-foreground">{c.nominaciones.length} nominaciones</span>
                     <Badge variant={c.estado === CeremonyState.CERRADA ? "secondary" : "default"}>
                       {c.estado === CeremonyState.CERRADA ? "Cerrada" : "Abierta"}
                     </Badge>
