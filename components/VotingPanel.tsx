@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { showToast } from "@/components/ui/app-toast";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Nomination, CategoryLeaderboard, UserRole } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { castVote } from "@/lib/actions/votes";
 import { deleteNominacion } from "@/lib/actions/ceremonies";
 
@@ -56,11 +57,24 @@ export function VotingPanel({
       {groups.map((group) => {
         const lb = leaderboards[group.categoryId];
         const totalVotos = lb?.resumen.totalVotosCategoria ?? 0;
+        const categoryHasVote = Boolean(myVotes[group.categoryId]);
+        const canVoteInCategory = canVote && !categoryHasVote;
+        const selectedNomination = group.nominations.find(
+          (nomination) => nomination._id === myVotes[group.categoryId]
+        );
+        const selectedNomineeLabel = selectedNomination ? nomineeLabel(selectedNomination) : null;
 
         return (
           <div key={group.categoryId} className="border rounded-lg overflow-hidden">
             <div className="px-4 py-2.5 bg-muted/40 flex items-center justify-between">
-              <h3 className="font-medium text-sm">{group.categoryName}</h3>
+              <div className="min-w-0">
+                <h3 className="font-medium text-sm">{group.categoryName}</h3>
+                {selectedNomineeLabel && (
+                  <p className="mt-1 text-xs text-green-700">
+                    Votaste por: {selectedNomineeLabel}
+                  </p>
+                )}
+              </div>
               <div className="flex items-center gap-3">
                 {totalVotos > 0 && (
                   <span className="text-xs text-muted-foreground">{totalVotos} votos</span>
@@ -77,9 +91,15 @@ export function VotingPanel({
                 const votes = voteCountMap[nom._id] ?? 0;
                 const pct = totalVotos > 0 ? Math.round((votes / totalVotos) * 100) : 0;
                 const showBar = !!lb;
+                const rowClassName = cn(
+                  "px-4 py-3 space-y-1.5 transition-colors",
+                  isMyVote && "border-l-4 border-l-green-600 bg-green-50/70",
+                  !isMyVote && canVoteInCategory && "border-l-4 border-l-amber-400 bg-amber-50/50",
+                  !isMyVote && categoryHasVote && "bg-muted/20"
+                );
 
                 return (
-                  <div key={nom._id} className="px-4 py-3 space-y-1.5">
+                  <div key={nom._id} className={rowClassName}>
                     <div className="flex items-center gap-3">
                       {/* Left: nominee info */}
                       <div className="flex-1 flex items-center gap-2 min-w-0">
@@ -94,6 +114,19 @@ export function VotingPanel({
                             Ganador
                           </Badge>
                         )}
+                        {isMyVote && (
+                          <Badge className="text-xs shrink-0 bg-green-600 hover:bg-green-600">
+                            Tu voto
+                          </Badge>
+                        )}
+                        {!categoryHasVote && canVote && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs shrink-0 border-amber-300 bg-amber-50 text-amber-900"
+                          >
+                            Pendiente
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Right: votes + actions */}
@@ -104,14 +137,14 @@ export function VotingPanel({
                           </span>
                         )}
 
-                        {canVote && (
+                        {canVoteInCategory && (
                           <Button
                             size="sm"
-                            variant={isMyVote ? "default" : "outline"}
+                            variant="outline"
                             onClick={() => handleVote(nom._id)}
                             disabled={isPending}
                           >
-                            {isMyVote ? "Votado" : "Votar"}
+                            Votar
                           </Button>
                         )}
 

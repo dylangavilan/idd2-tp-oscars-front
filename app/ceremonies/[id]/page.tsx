@@ -75,11 +75,14 @@ export default async function CeremonyPage({
     // My votes (academy member)
     if (isAcademyMember) {
       try {
-        const myVotesResp = await api.get<{ voto: { id: string }; categoria: { id: string }; nominacion: { id: string } }[]>(
+        const myVotesResp = await api.get<{
+          voto: { id: string };
+          nominacion: { id: string; categoria: { id: string } };
+        }[]>(
           `/votes/my-votes?idCeremonia=${id}`
         );
         for (const v of myVotesResp) {
-          myVotes[v.categoria.id] = v.nominacion.id;
+          myVotes[v.nominacion.categoria.id] = v.nominacion.id;
         }
       } catch {}
     }
