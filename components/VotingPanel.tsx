@@ -2,9 +2,9 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { showToast } from "@/components/ui/app-toast";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Nomination, CategoryLeaderboard, UserRole } from "@/lib/types";
 import { castVote } from "@/lib/actions/votes";
@@ -38,10 +38,12 @@ export function VotingPanel({
     startTransition(async () => {
       try {
         await castVote(ceremonyId, nominacionId);
-        toast.success("Voto registrado");
+        showToast({ message: "Voto registrado", type: "success" });
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error al votar");
+        const message = err instanceof Error ? err.message : "Error al votar";
+        const type = message.includes("ya emitio un voto") ? "warn" : "alert";
+        showToast({ message, type });
       }
     });
   }

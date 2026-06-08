@@ -6,6 +6,8 @@ import { ApiError, api } from "@/lib/api";
 import { saveToken, clearToken } from "@/lib/session";
 import { LoginResponse } from "@/lib/types";
 
+const REGISTER_ROLES = new Set(["ADMIN", "ACADEMY_MEMBER", "COMMON_USER"]);
+
 export async function login(
   _prevState: { error: string } | null,
   formData: FormData
@@ -29,9 +31,14 @@ export async function register(
 ): Promise<{ error: string } | null> {
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
+  const rol = String(formData.get("rol") ?? "COMMON_USER");
 
   if (password !== confirmPassword) {
     return { error: "Las contrasenas no coinciden" };
+  }
+
+  if (!REGISTER_ROLES.has(rol)) {
+    return { error: "El rol seleccionado no es valido" };
   }
 
   try {
@@ -40,7 +47,7 @@ export async function register(
       apellido: formData.get("apellido"),
       email: formData.get("email"),
       password,
-      rol: "COMMON_USER",
+      rol,
     });
 
     const result = await api.post<LoginResponse>("/auth/login", {

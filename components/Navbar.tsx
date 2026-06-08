@@ -66,7 +66,7 @@ export function Navbar({ user }: NavbarProps) {
 
             <div className="flex items-center gap-3 shrink-0">
               <span className="text-sm text-muted-foreground hidden sm:block">
-                {user.nombre}{" "}
+                {user.nombre} {user.apellido}{" "}
                 <span className="opacity-50 text-xs">({user.rol})</span>
               </span>
               <form action={logout}>

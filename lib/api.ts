@@ -27,7 +27,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const json = await res.json();
 
   if (!res.ok) {
-    throw new ApiError(res.status, json?.error ?? "Error inesperado");
+    const message =
+      typeof json?.error === "string"
+        ? json.error
+        : json?.error?.message || "Error inesperado";
+    throw new ApiError(res.status, message);
   }
 
   return json.data as T;

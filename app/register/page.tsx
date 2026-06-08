@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const ROLE_OPTIONS = [
+  { value: "ADMIN", label: "Admin" },
+  { value: "ACADEMY_MEMBER", label: "Miembro de la academia" },
+  { value: "COMMON_USER", label: "Common user" },
+] as const;
+
 export default function RegisterPage() {
   const [state, action, isPending] = useActionState(register, null);
 
@@ -47,6 +53,23 @@ export default function RegisterPage() {
             placeholder="usuario@oscar.com"
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="rol">Rol</Label>
+          <select
+            id="rol"
+            name="rol"
+            defaultValue="COMMON_USER"
+            className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-ring disabled:opacity-50"
+            required
+          >
+            {ROLE_OPTIONS.map((role) => (
+              <option key={role.value} value={role.value}>
+                {role.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
