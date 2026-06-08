@@ -96,14 +96,12 @@ export function Navbar({ user }: NavbarProps) {
           </>
         ) : (
           <div className="flex flex-1 justify-end gap-2">
-            <Link href="/register">
-              <Button size="sm">Crear cuenta</Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="outline" size="sm">
-                Iniciar sesion
-              </Button>
-            </Link>
+            <Button size="sm" render={<Link href="/register" />}>
+              Crear cuenta
+            </Button>
+            <Button variant="outline" size="sm" render={<Link href="/login" />}>
+              Iniciar sesion
+            </Button>
           </div>
         )}
       </div>
