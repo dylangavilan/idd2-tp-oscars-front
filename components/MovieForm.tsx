@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/app-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { Professional, Movie } from "@/lib/types";
 import { createMovie, updateMovie } from "@/lib/actions/movies";
 
 const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor"] as const;
+let castRowId = 0;
 
 interface CastRow {
   id: string;
@@ -26,18 +27,23 @@ interface Props {
 const selectClass =
   "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus:border-ring disabled:opacity-50";
 
+function createCastRow(): CastRow {
+  castRowId += 1;
+  return { id: `cast-${castRowId}`, profesionalId: "", rol: "" };
+}
+
 export function MovieForm({ professionals, movie }: Props) {
   const [cast, setCast] = useState<CastRow[]>(
     movie?.reparto.map((m, i) => ({
       id: `cast-init-${i}`,
       profesionalId: typeof m.profesionalId === "string" ? m.profesionalId : m.profesionalId._id,
       rol: m.rol,
-    })) ?? [{ id: `cast-${Date.now()}`, profesionalId: "", rol: "" }]
+    })) ?? [createCastRow()]
   );
   const [isPending, startTransition] = useTransition();
 
   function addCastRow() {
-    setCast((prev) => [...prev, { id: `cast-${Date.now()}`, profesionalId: "", rol: "" }]);
+    setCast((prev) => [...prev, createCastRow()]);
   }
 
   function removeCastRow(i: number) {
@@ -66,7 +72,10 @@ export function MovieForm({ professionals, movie }: Props) {
           await createMovie(payload);
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error al guardar");
+        showToast({
+          message: err instanceof Error ? err.message : "Error al guardar",
+          type: "alert",
+        });
       }
     });
   }

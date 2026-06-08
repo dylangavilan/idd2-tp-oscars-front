@@ -2,6 +2,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { Ceremony, CeremonyState, UserRole } from "@/lib/types";
 import { getAuthContext } from "@/lib/session";
+import { FlashToast } from "@/components/FlashToast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,12 @@ import {
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteCeremony } from "@/lib/actions/ceremonies";
 
-export default async function CeremoniesPage() {
+export default async function CeremoniesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ toastMessage?: string; type?: "alert" | "info" | "warn" | "success" }>;
+}) {
+  const params = (await searchParams) ?? {};
   const { session, isAdmin, isAcademyMember } = await getAuthContext();
   
 
@@ -23,6 +29,7 @@ export default async function CeremoniesPage() {
 
   return (
     <div className="space-y-6">
+      <FlashToast message={params.toastMessage} type={params.type} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Ceremonias</h1>

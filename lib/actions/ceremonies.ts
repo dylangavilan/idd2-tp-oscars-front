@@ -11,7 +11,7 @@ export async function createCeremony(formData: FormData): Promise<void> {
     lugar: formData.get("lugar"),
   });
   revalidatePath("/ceremonies");
-  redirect("/ceremonies");
+  redirect("/ceremonies?toastMessage=Ceremonia%20creada&type=success");
 }
 
 export async function updateCeremony(id: string, formData: FormData): Promise<void> {
@@ -21,7 +21,7 @@ export async function updateCeremony(id: string, formData: FormData): Promise<vo
     lugar: formData.get("lugar"),
   });
   revalidatePath("/ceremonies");
-  redirect(`/ceremonies/${id}`);
+  redirect(`/ceremonies/${id}?toastMessage=Ceremonia%20actualizada&type=info`);
 }
 
 export async function deleteCeremony(id: string): Promise<void> {
@@ -33,6 +33,7 @@ export async function closeCeremony(id: string): Promise<void> {
   await api.post(`/ceremonies/${id}/close`, {});
   revalidatePath("/ceremonies");
   revalidatePath(`/ceremonies/${id}`);
+  redirect(`/ceremonies/${id}?toastMessage=Ceremonia%20cerrada&type=success`);
 }
 
 interface NominationPayload {

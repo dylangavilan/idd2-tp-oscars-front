@@ -2,6 +2,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { Category, UserRole } from "@/lib/types";
 import { getAuthContext } from "@/lib/session";
+import { FlashToast } from "@/components/FlashToast";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -14,7 +15,12 @@ import {
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteCategory } from "@/lib/actions/categories";
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ toastMessage?: string; type?: "alert" | "info" | "warn" | "success" }>;
+}) {
+  const params = (await searchParams) ?? {};
   const { session, isAdmin, isAcademyMember } = await getAuthContext();
   
 
@@ -22,6 +28,7 @@ export default async function CategoriesPage() {
 
   return (
     <div className="space-y-6">
+      <FlashToast message={params.toastMessage} type={params.type} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Categorías</h1>

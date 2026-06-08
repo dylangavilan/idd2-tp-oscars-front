@@ -15,6 +15,7 @@ import {
   NomineeType,
 } from "@/lib/types";
 import { getAuthContext } from "@/lib/session";
+import { FlashToast } from "@/components/FlashToast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VotingPanel } from "@/components/VotingPanel";
@@ -25,10 +26,13 @@ import { closeCeremony } from "@/lib/actions/ceremonies";
 
 export default async function CeremonyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ toastMessage?: string; type?: "alert" | "info" | "warn" | "success" }>;
 }) {
   const { id } = await params;
+  const toastParams = (await searchParams) ?? {};
 
   let ceremony: Ceremony;
   try {
@@ -136,6 +140,7 @@ export default async function CeremonyPage({
 
   return (
     <div className="space-y-8">
+      <FlashToast message={toastParams.toastMessage} type={toastParams.type} />
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

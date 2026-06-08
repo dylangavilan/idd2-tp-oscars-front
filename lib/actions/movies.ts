@@ -15,13 +15,13 @@ interface MoviePayload {
 export async function createMovie(data: MoviePayload): Promise<void> {
   await api.post("/movies", data);
   revalidatePath("/movies");
-  redirect("/movies");
+  redirect("/movies?toastMessage=Pelicula%20creada&type=success");
 }
 
 export async function updateMovie(id: string, data: MoviePayload): Promise<void> {
   await api.put(`/movies/${id}`, data);
   revalidatePath("/movies");
-  redirect("/movies");
+  redirect("/movies?toastMessage=Pelicula%20actualizada&type=info");
 }
 
 export async function deleteMovie(id: string): Promise<void> {
