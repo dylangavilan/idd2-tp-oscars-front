@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("oscar_token")?.value;
   const pathname = request.nextUrl.pathname;
 
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/register") {
     if (token) return NextResponse.redirect(new URL("/", request.url));
     return NextResponse.next();
   }

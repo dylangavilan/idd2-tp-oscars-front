@@ -77,7 +77,10 @@ export function Navbar({ user }: NavbarProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex justify-end">
+          <div className="flex-1 flex justify-end gap-2">
+            <Link href="/register">
+              <Button size="sm">Crear cuenta</Button>
+            </Link>
             <Link href="/login">
               <Button variant="outline" size="sm">
                 Iniciar sesión
