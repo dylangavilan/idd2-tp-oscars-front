@@ -10,7 +10,7 @@ export async function createCategory(formData: FormData) {
     descripcion: formData.get("descripcion") || "",
   });
   revalidatePath("/categories");
-  redirect("/categories");
+  redirect("/categories?toastMessage=Categoria%20creada&type=success");
 }
 
 export async function updateCategory(id: string, formData: FormData) {
@@ -19,7 +19,7 @@ export async function updateCategory(id: string, formData: FormData) {
     descripcion: formData.get("descripcion") || "",
   });
   revalidatePath("/categories");
-  redirect("/categories");
+  redirect("/categories?toastMessage=Categoria%20actualizada&type=info");
 }
 
 export async function deleteCategory(id: string) {

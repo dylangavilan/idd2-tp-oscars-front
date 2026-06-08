@@ -2,11 +2,12 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { showToast } from "@/components/ui/app-toast";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Nomination, CategoryLeaderboard, UserRole } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { castVote } from "@/lib/actions/votes";
 import { deleteNominacion } from "@/lib/actions/ceremonies";
 
@@ -28,105 +29,155 @@ interface Props {
 }
 
 export function VotingPanel({
-  ceremonyId, isOpen, userRole, isAdmin, groups, voteCountMap, leaderboards, myVotes,
+  ceremonyId,
+  isOpen,
+  userRole,
+  isAdmin,
+  groups,
+  voteCountMap,
+  leaderboards,
+  myVotes,
 }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const canVote = isOpen && userRole === UserRole.ACADEMY_MEMBER;
 
+  const normalizeId = (value: unknown) => String(value ?? "");
+
   function handleVote(nominacionId: string) {
     startTransition(async () => {
       try {
         await castVote(ceremonyId, nominacionId);
-        toast.success("Voto registrado");
+        showToast({ message: "Voto registrado", type: "success" });
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error al votar");
+        const message = err instanceof Error ? err.message : "Error al votar";
+        const type = message.includes("ya emitio un voto") ? "warn" : "alert";
+        showToast({ message, type });
       }
     });
   }
 
   const nomineeLabel = (nom: Nomination) =>
-    nom.pelicula ? nom.pelicula.titulo : nom.profesional?.nombreCompleto ?? "—";
+    nom.pelicula ? nom.pelicula.titulo : nom.profesional?.nombreCompleto ?? "-";
 
   return (
     <div className="space-y-4">
       {groups.map((group) => {
-        const lb = leaderboards[group.categoryId];
+        const categoryId = normalizeId(group.categoryId);
+        const lb = leaderboards[categoryId];
+        const votedNominationId = normalizeId(myVotes[categoryId]);
         const totalVotos = lb?.resumen.totalVotosCategoria ?? 0;
+        const categoryHasVote = Boolean(votedNominationId);
+        const canVoteInCategory = canVote && !categoryHasVote;
+        const selectedNomination = group.nominations.find(
+          (nomination) => normalizeId(nomination._id) === votedNominationId
+        );
+        const selectedNomineeLabel = selectedNomination ? nomineeLabel(selectedNomination) : null;
 
         return (
-          <div key={group.categoryId} className="border rounded-lg overflow-hidden">
-            <div className="px-4 py-2.5 bg-muted/40 flex items-center justify-between">
-              <h3 className="font-medium text-sm">{group.categoryName}</h3>
+          <div key={categoryId} className="overflow-hidden rounded-lg border">
+            <div className="flex items-center justify-between bg-muted/40 px-4 py-2.5">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold tracking-wide text-foreground">
+                  {group.categoryName}
+                </h3>
+                {selectedNomineeLabel && (
+                  <p className="mt-1 text-xs text-green-700">Votaste por: {selectedNomineeLabel}</p>
+                )}
+              </div>
+
               <div className="flex items-center gap-3">
                 {totalVotos > 0 && (
                   <span className="text-xs text-muted-foreground">{totalVotos} votos</span>
                 )}
-                {myVotes[group.categoryId] && (
-                  <Badge variant="default" className="text-xs">Tu voto registrado</Badge>
+                {categoryHasVote && (
+                  <Badge variant="default" className="text-xs">
+                    Tu voto registrado
+                  </Badge>
                 )}
               </div>
             </div>
 
             <div className="divide-y">
               {group.nominations.map((nom) => {
-                const isMyVote = myVotes[group.categoryId] === nom._id;
-                const votes = voteCountMap[nom._id] ?? 0;
+                const nominationId = normalizeId(nom._id);
+                const isMyVote = votedNominationId === nominationId;
+                const votes = voteCountMap[nominationId] ?? 0;
                 const pct = totalVotos > 0 ? Math.round((votes / totalVotos) * 100) : 0;
-                const showBar = !!lb;
+                const showBar = Boolean(lb);
+                const rowClassName = cn(
+                  "space-y-1.5 px-4 py-3 transition-colors",
+                  isMyVote && "border-l-4 border-l-green-600 bg-green-50/70",
+                  !isMyVote && canVoteInCategory && "border-l-4 border-l-amber-400 bg-amber-50/50",
+                  !isMyVote && categoryHasVote && "bg-muted/20"
+                );
 
                 return (
-                  <div key={nom._id} className="px-4 py-3 space-y-1.5">
+                  <div key={nominationId} className={rowClassName}>
                     <div className="flex items-center gap-3">
-                      {/* Left: nominee info */}
-                      <div className="flex-1 flex items-center gap-2 min-w-0">
-                        <span className={`text-sm truncate ${nom.esGanador ? "font-semibold" : ""}`}>
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <span className={cn("truncate text-sm", nom.esGanador && "font-semibold")}>
                           {nomineeLabel(nom)}
                         </span>
-                        <Badge variant="outline" className="text-xs shrink-0">
-                          {nom.pelicula ? "Película" : "Profesional"}
+
+                        <Badge variant="outline" className="shrink-0 text-xs">
+                          {nom.pelicula ? "Pelicula" : "Profesional"}
                         </Badge>
+
                         {nom.esGanador && (
-                          <Badge className="text-xs shrink-0 bg-yellow-500 text-black hover:bg-yellow-500">
+                          <Badge className="shrink-0 bg-yellow-500 text-xs text-black hover:bg-yellow-500">
                             Ganador
+                          </Badge>
+                        )}
+
+                        {isMyVote && (
+                          <Badge className="shrink-0 bg-green-600 text-xs hover:bg-green-600">
+                            Tu voto
+                          </Badge>
+                        )}
+
+                        {!categoryHasVote && canVote && (
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 border-amber-300 bg-amber-50 text-xs text-amber-900"
+                          >
+                            Pendiente
                           </Badge>
                         )}
                       </div>
 
-                      {/* Right: votes + actions */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex shrink-0 items-center gap-2">
                         {showBar && (
-                          <span className="text-xs text-muted-foreground w-20 text-right">
+                          <span className="w-20 text-right text-xs text-muted-foreground">
                             {votes} voto{votes !== 1 ? "s" : ""} ({pct}%)
                           </span>
                         )}
 
-                        {canVote && (
+                        {canVoteInCategory && (
                           <Button
                             size="sm"
-                            variant={isMyVote ? "default" : "outline"}
-                            onClick={() => handleVote(nom._id)}
+                            variant="outline"
+                            onClick={() => handleVote(nominationId)}
                             disabled={isPending}
                           >
-                            {isMyVote ? "Votado" : "Votar"}
+                            Votar
                           </Button>
                         )}
 
                         {isAdmin && (
                           <DeleteButton
-                            action={deleteNominacion.bind(null, ceremonyId, nom._id)}
-                            label="nominación"
+                            action={deleteNominacion.bind(null, ceremonyId, nominationId)}
+                            label="nominacion"
                           />
                         )}
                       </div>
                     </div>
 
-                    {/* Vote bar */}
                     {showBar && (
-                      <div className="h-1 bg-muted rounded-full overflow-hidden">
+                      <div className="h-1 overflow-hidden rounded-full bg-muted">
                         <div
-                          className="h-full bg-primary/50 rounded-full transition-all duration-500"
+                          className="h-full rounded-full bg-green-500/70 transition-all duration-500"
                           style={{ width: `${pct}%` }}
                         />
                       </div>

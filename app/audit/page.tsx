@@ -59,9 +59,9 @@ export default async function AuditPage() {
             </TableHeader>
             <TableBody>
               {logs.map((log) => (
-                <TableRow key={log.id}>
+                <TableRow key={log.id_auditoria}>
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                    {new Date(log.timestamp).toLocaleString("es-AR")}
+                    {new Date(log.fecha).toLocaleString("es-AR")}
                   </TableCell>
                   <TableCell className="text-sm">{log.idUsuario}</TableCell>
                   <TableCell>

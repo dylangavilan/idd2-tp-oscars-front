@@ -11,7 +11,7 @@ export async function createCeremony(formData: FormData): Promise<void> {
     lugar: formData.get("lugar"),
   });
   revalidatePath("/ceremonies");
-  redirect("/ceremonies");
+  redirect("/ceremonies?toastMessage=Ceremonia%20creada&type=success");
 }
 
 export async function updateCeremony(id: string, formData: FormData): Promise<void> {
@@ -21,7 +21,7 @@ export async function updateCeremony(id: string, formData: FormData): Promise<vo
     lugar: formData.get("lugar"),
   });
   revalidatePath("/ceremonies");
-  redirect(`/ceremonies/${id}`);
+  redirect(`/ceremonies/${id}?toastMessage=Ceremonia%20actualizada&type=info`);
 }
 
 export async function deleteCeremony(id: string): Promise<void> {
@@ -33,12 +33,18 @@ export async function closeCeremony(id: string): Promise<void> {
   await api.post(`/ceremonies/${id}/close`, {});
   revalidatePath("/ceremonies");
   revalidatePath(`/ceremonies/${id}`);
+  redirect(`/ceremonies/${id}?toastMessage=Ceremonia%20cerrada&type=success`);
 }
 
 interface NominationPayload {
   categoria: { id: string; nombre: string };
   pelicula?: { id: string; titulo: string };
   profesional?: { id: string; nombreCompleto: string };
+}
+
+export interface PerformancePayload {
+  tipoActuacion: string;
+  artistas: { nombre: string; tipo: string }[];
 }
 
 export async function addNominacion(ceremonyId: string, data: NominationPayload): Promise<void> {
@@ -58,5 +64,24 @@ export async function updateNominacion(
 
 export async function deleteNominacion(ceremonyId: string, nomId: string): Promise<void> {
   await api.delete(`/ceremonies/${ceremonyId}/nominaciones/${nomId}`);
+  revalidatePath(`/ceremonies/${ceremonyId}`);
+}
+
+export async function addActuacion(ceremonyId: string, data: PerformancePayload): Promise<void> {
+  await api.post(`/ceremonies/${ceremonyId}/actuaciones`, data);
+  revalidatePath(`/ceremonies/${ceremonyId}`);
+}
+
+export async function updateActuacion(
+  ceremonyId: string,
+  actuacionId: string,
+  data: PerformancePayload
+): Promise<void> {
+  await api.put(`/ceremonies/${ceremonyId}/actuaciones/${actuacionId}`, data);
+  revalidatePath(`/ceremonies/${ceremonyId}`);
+}
+
+export async function deleteActuacion(ceremonyId: string, actuacionId: string): Promise<void> {
+  await api.delete(`/ceremonies/${ceremonyId}/actuaciones/${actuacionId}`);
   revalidatePath(`/ceremonies/${ceremonyId}`);
 }

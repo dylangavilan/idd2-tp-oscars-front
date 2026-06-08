@@ -17,7 +17,7 @@ export interface Professional {
 }
 
 export interface ProfessionalRole {
-  nombre: "Actor Principal" | "Actor Secundario" | "Director" | "Productor";
+  nombre: "Actor Principal" | "Actor Secundario" | "Director" | "Productor" | "Otro";
 }
 
 export interface Movie {
@@ -33,7 +33,7 @@ export interface Movie {
 
 export interface CastMember {
   profesionalId: Professional | string;
-  rol: "Actor Principal" | "Actor Secundario" | "Director" | "Productor";
+  rol: "Actor Principal" | "Actor Secundario" | "Director" | "Productor" | "Otro";
 }
 
 export const CeremonyState = {
@@ -57,13 +57,33 @@ export interface Ceremony {
 
 export interface Performance {
   _id?: string;
-  tipoActuacion: string;
+  tipoActuacion: PerformanceType;
   artistas: Artist[];
 }
 
+export const PerformanceType = {
+  MUSICAL: "Musical",
+  CANCION_NOMINADA: "Cancion nominada",
+  HOMENAJE: "Homenaje",
+  APERTURA: "Apertura",
+  INTERMEDIO: "Intermedio",
+  CIERRE: "Cierre",
+} as const;
+export type PerformanceType = (typeof PerformanceType)[keyof typeof PerformanceType];
+
+export const ArtistType = {
+  CANTANTE: "Cantante",
+  SOLISTA: "Solista",
+  BANDA: "Banda",
+  ORQUESTA: "Orquesta",
+  ACTOR_CANTANTE: "Actor/Cantante",
+  CORO: "Coro",
+} as const;
+export type ArtistType = (typeof ArtistType)[keyof typeof ArtistType];
+
 export interface Artist {
   nombre: string;
-  tipo: "Cantante" | "Banda" | "Orquesta";
+  tipo: ArtistType;
 }
 
 export interface Nomination {
@@ -231,10 +251,11 @@ export interface LoginResponse {
 }
 
 export interface AuditLog {
-  id: number;
+  id_auditoria: number;
   idUsuario: number;
   accion: string;
   entidad: string;
   detalle?: string;
-  timestamp: string;
+  fecha: string;
+  email?: string;
 }

@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/ui/app-toast";
 import { Label } from "@/components/ui/label";
 import { Category, Movie, Professional, Nomination, NomineeType } from "@/lib/types";
 import { addNominacion, updateNominacion } from "@/lib/actions/ceremonies";
@@ -28,24 +28,26 @@ export function NominationForm({ ceremonyId, categories, movies, professionals, 
 
   const [tipo, setTipo] = useState<NomineeType>(existing);
   const [categoryId, setCategoryId] = useState(nomination?.categoria.id ?? "");
-  const [peliculaId, setPeliculaId] = useState(
-    nomination?.pelicula?.id ?? ""
-  );
-  const [profesionalId, setProfesionalId] = useState(
-    nomination?.profesional?.id ?? ""
-  );
+  const [peliculaId, setPeliculaId] = useState(nomination?.pelicula?.id ?? "");
+  const [profesionalId, setProfesionalId] = useState(nomination?.profesional?.id ?? "");
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const cat = categories.find((c) => c._id === categoryId);
-    if (!cat) return toast.error("Seleccioná una categoría");
+    if (!cat) {
+      showToast({ message: "Selecciona una categoria", type: "alert" });
+      return;
+    }
 
     startTransition(async () => {
       try {
         if (tipo === NomineeType.PELICULA) {
           const movie = movies.find((m) => m._id === peliculaId);
-          if (!movie) { toast.error("Seleccioná una película"); return; }
+          if (!movie) {
+            showToast({ message: "Selecciona una pelicula", type: "alert" });
+            return;
+          }
           const data = {
             categoria: { id: cat._id, nombre: cat.nombre },
             pelicula: { id: movie._id, titulo: movie.titulo },
@@ -57,7 +59,10 @@ export function NominationForm({ ceremonyId, categories, movies, professionals, 
           }
         } else {
           const prof = professionals.find((p) => p._id === profesionalId);
-          if (!prof) { toast.error("Seleccioná un profesional"); return; }
+          if (!prof) {
+            showToast({ message: "Selecciona un profesional", type: "alert" });
+            return;
+          }
           const data = {
             categoria: { id: cat._id, nombre: cat.nombre },
             profesional: {
@@ -72,24 +77,29 @@ export function NominationForm({ ceremonyId, categories, movies, professionals, 
           }
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error al guardar");
+        showToast({
+          message: err instanceof Error ? err.message : "Error al guardar",
+          type: "alert",
+        });
       }
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+    <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
       <div className="space-y-2">
-        <Label>Categoría</Label>
+        <Label>Categoria</Label>
         <select
           className={selectClass}
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
           required
         >
-          <option value="">Seleccionar categoría</option>
+          <option value="">Seleccionar categoria</option>
           {categories.map((c) => (
-            <option key={c._id} value={c._id}>{c.nombre}</option>
+            <option key={c._id} value={c._id}>
+              {c.nombre}
+            </option>
           ))}
         </select>
       </div>
@@ -97,15 +107,15 @@ export function NominationForm({ ceremonyId, categories, movies, professionals, 
       <div className="space-y-2">
         <Label>Tipo de nominado</Label>
         <div className="flex gap-4">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="radio"
               checked={tipo === NomineeType.PELICULA}
               onChange={() => setTipo(NomineeType.PELICULA)}
             />
-            Película
+            Pelicula
           </label>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="radio"
               checked={tipo === NomineeType.PROFESIONAL}
@@ -118,16 +128,18 @@ export function NominationForm({ ceremonyId, categories, movies, professionals, 
 
       {tipo === NomineeType.PELICULA ? (
         <div className="space-y-2">
-          <Label>Película</Label>
+          <Label>Pelicula</Label>
           <select
             className={selectClass}
             value={peliculaId}
             onChange={(e) => setPeliculaId(e.target.value)}
             required
           >
-            <option value="">Seleccionar película</option>
+            <option value="">Seleccionar pelicula</option>
             {movies.map((m) => (
-              <option key={m._id} value={m._id}>{m.titulo} ({m.anioEstreno})</option>
+              <option key={m._id} value={m._id}>
+                {m.titulo} ({m.anioEstreno})
+              </option>
             ))}
           </select>
         </div>
@@ -152,7 +164,7 @@ export function NominationForm({ ceremonyId, categories, movies, professionals, 
 
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Guardando..." : nomination ? "Guardar cambios" : "Agregar nominación"}
+          {isPending ? "Guardando..." : nomination ? "Guardar cambios" : "Agregar nominacion"}
         </Button>
         <Button variant="outline" render={<Link href={`/ceremonies/${ceremonyId}`} />}>
           Cancelar

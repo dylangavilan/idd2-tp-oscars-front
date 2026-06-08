@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 
 const mainLinks = [
   { href: "/ceremonies", label: "Ceremonias" },
-  { href: "/movies", label: "Películas" },
+  { href: "/movies", label: "Peliculas" },
   { href: "/professionals", label: "Profesionales" },
-  { href: "/categories", label: "Categorías" },
+  { href: "/categories", label: "Categorias/Premios" },
   { href: "/votes", label: "Votaciones" },
 ];
 
@@ -23,64 +23,85 @@ export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
 
   return (
-    <header className="border-b bg-card">
-      <div className="container mx-auto px-4 max-w-6xl flex items-center gap-4 h-14">
-        <Link href="/" className="font-semibold text-sm tracking-tight shrink-0 hover:opacity-80 transition-opacity">
-          Premios Oscar
+    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/70 backdrop-blur-2xl">
+      <div className="mx-auto flex h-18 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/25 via-primary/8 to-transparent text-sm font-semibold text-primary shadow-sm">
+              OA
+            </div>
+            <div className="min-w-0">
+              <div className="font-heading text-lg font-semibold tracking-tight">Premios Oscar</div>
+              <div className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                Academy Dashboard
+              </div>
+            </div>
+          </div>
         </Link>
 
         {user ? (
           <>
-            <nav className="flex items-center gap-1 overflow-x-auto flex-1">
+            <nav className="flex flex-1 items-center gap-1 overflow-x-auto rounded-2xl border border-border/60 bg-card/80 p-1 shadow-sm">
               {mainLinks.map(({ href, label }) => {
                 const active = pathname === href || pathname.startsWith(href + "/");
+
                 return (
                   <Link
                     key={href}
                     href={href}
                     className={cn(
-                      "px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors",
+                      "whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all",
                       active
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        ? "bg-primary text-primary-foreground shadow-[0_12px_30px_-18px_rgba(196,148,52,0.95)]"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                   >
                     {label}
                   </Link>
                 );
               })}
+
               {user.rol === UserRole.ADMIN && (
                 <Link
                   href="/audit"
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors",
+                    "whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all",
                     pathname.startsWith("/audit")
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "bg-primary text-primary-foreground shadow-[0_12px_30px_-18px_rgba(196,148,52,0.95)]"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
-                  Auditoría
+                  Auditoria
                 </Link>
               )}
             </nav>
 
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {user.nombre}{" "}
-                <span className="opacity-50 text-xs">({user.rol})</span>
-              </span>
-              <form action={logout}>
-                <Button type="submit" variant="outline" size="sm">
-                  Cerrar sesión
-                </Button>
-              </form>
+            <div className="shrink-0 rounded-2xl border border-border/60 bg-card/80 px-3 py-2 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="hidden text-right sm:block">
+                  <div className="text-sm font-medium">
+                    {user.nombre} {user.apellido}
+                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    {user.rol}
+                  </div>
+                </div>
+                <form action={logout}>
+                  <Button type="submit" variant="outline" size="sm">
+                    Cerrar sesion
+                  </Button>
+                </form>
+              </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex justify-end">
+          <div className="flex flex-1 justify-end gap-2">
+            <Link href="/register">
+              <Button size="sm">Crear cuenta</Button>
+            </Link>
             <Link href="/login">
               <Button variant="outline" size="sm">
-                Iniciar sesión
+                Iniciar sesion
               </Button>
             </Link>
           </div>

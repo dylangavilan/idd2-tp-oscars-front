@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/ui/app-toast";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 
 interface DeleteButtonProps {
   action: () => Promise<void>;
@@ -26,10 +26,16 @@ export function DeleteButton({ action, label }: DeleteButtonProps) {
     startTransition(async () => {
       try {
         await action();
-        toast.success(`${label.charAt(0).toUpperCase() + label.slice(1)} eliminada`);
+        showToast({
+          message: `${label.charAt(0).toUpperCase() + label.slice(1)} eliminada`,
+          type: "success",
+        });
         setOpen(false);
       } catch {
-        toast.error(`No se pudo eliminar la ${label}`);
+        showToast({
+          message: `No se pudo eliminar la ${label}`,
+          type: "alert",
+        });
       }
     });
   }

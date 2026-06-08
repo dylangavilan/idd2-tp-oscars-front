@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { login } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,13 @@ export default function LoginPage() {
           {isPending ? "Ingresando..." : "Ingresar"}
         </Button>
       </form>
+
+      <p className="text-sm text-muted-foreground">
+        No tenes cuenta?{" "}
+        <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
+          Registrate
+        </Link>
+      </p>
     </div>
   );
 }

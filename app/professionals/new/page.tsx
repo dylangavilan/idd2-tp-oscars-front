@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createProfessional } from "@/lib/actions/professionals";
 
-const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor"];
+const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor", "Otro"];
 
 export default async function NewProfessionalPage() {
   return (

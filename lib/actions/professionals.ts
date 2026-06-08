@@ -12,7 +12,7 @@ export async function createProfessional(formData: FormData): Promise<void> {
     roles: (formData.getAll("roles") as string[]).map((r) => ({ nombre: r })),
   });
   revalidatePath("/professionals");
-  redirect("/professionals");
+  redirect("/professionals?toastMessage=Profesional%20creado&type=success");
 }
 
 export async function updateProfessional(id: string, formData: FormData): Promise<void> {
@@ -23,7 +23,7 @@ export async function updateProfessional(id: string, formData: FormData): Promis
     roles: (formData.getAll("roles") as string[]).map((r) => ({ nombre: r })),
   });
   revalidatePath("/professionals");
-  redirect("/professionals");
+  redirect("/professionals?toastMessage=Profesional%20actualizado&type=info");
 }
 
 export async function deleteProfessional(id: string): Promise<void> {

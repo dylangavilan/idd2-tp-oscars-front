@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/ui/app-toast";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -52,58 +52,74 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
     e.preventDefault();
 
     const cat = categories.find((c) => c._id === categoryId);
-    if (!cat) { toast.error("Seleccioná una categoría"); return; }
+    if (!cat) {
+      showToast({ message: "Selecciona una categoria", type: "alert" });
+      return;
+    }
 
     startTransition(async () => {
       try {
         if (tipo === NomineeType.PELICULA) {
           const movie = movies.find((m) => m._id === peliculaId);
-          if (!movie) { toast.error("Seleccioná una película"); return; }
+          if (!movie) {
+            showToast({ message: "Selecciona una pelicula", type: "alert" });
+            return;
+          }
           await addNominacion(ceremonyId, {
             categoria: { id: cat._id, nombre: cat.nombre },
             pelicula: { id: movie._id, titulo: movie.titulo },
           });
         } else {
           const prof = professionals.find((p) => p._id === profesionalId);
-          if (!prof) { toast.error("Seleccioná un profesional"); return; }
+          if (!prof) {
+            showToast({ message: "Selecciona un profesional", type: "alert" });
+            return;
+          }
           await addNominacion(ceremonyId, {
             categoria: { id: cat._id, nombre: cat.nombre },
-            profesional: { id: prof._id, nombreCompleto: `${prof.nombre} ${prof.apellido}` },
+            profesional: {
+              id: prof._id,
+              nombreCompleto: `${prof.nombre} ${prof.apellido}`,
+            },
           });
         }
-        toast.success("Nominación agregada");
+
+        showToast({ message: "Nominacion agregada", type: "success" });
         setOpen(false);
         resetForm();
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error al agregar nominación");
+        showToast({
+          message: err instanceof Error ? err.message : "Error al agregar nominacion",
+          type: "alert",
+        });
       }
     });
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button size="sm" />}>
-        + Agregar nominación
-      </DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>+ Agregar nominacion</DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Agregar nominación</DialogTitle>
+          <DialogTitle>Agregar nominacion</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Categoría</Label>
+            <Label>Categoria</Label>
             <select
               className={selectClass}
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               required
             >
-              <option value="">Seleccionar categoría…</option>
+              <option value="">Seleccionar categoria...</option>
               {categories.map((c) => (
-                <option key={c._id} value={c._id}>{c.nombre}</option>
+                <option key={c._id} value={c._id}>
+                  {c.nombre}
+                </option>
               ))}
             </select>
           </div>
@@ -111,21 +127,29 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
           <div className="space-y-1.5">
             <Label>Tipo de nominado</Label>
             <div className="flex gap-6">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
                   type="radio"
                   name="tipo"
                   checked={tipo === NomineeType.PELICULA}
-                  onChange={() => { setTipo(NomineeType.PELICULA); setPeliculaId(""); setProfesionalId(""); }}
+                  onChange={() => {
+                    setTipo(NomineeType.PELICULA);
+                    setPeliculaId("");
+                    setProfesionalId("");
+                  }}
                 />
-                Película
+                Pelicula
               </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
                   type="radio"
                   name="tipo"
                   checked={tipo === NomineeType.PROFESIONAL}
-                  onChange={() => { setTipo(NomineeType.PROFESIONAL); setPeliculaId(""); setProfesionalId(""); }}
+                  onChange={() => {
+                    setTipo(NomineeType.PROFESIONAL);
+                    setPeliculaId("");
+                    setProfesionalId("");
+                  }}
                 />
                 Profesional
               </label>
@@ -134,14 +158,14 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
 
           {tipo === NomineeType.PELICULA ? (
             <div className="space-y-1.5">
-              <Label>Película</Label>
+              <Label>Pelicula</Label>
               <select
                 className={selectClass}
                 value={peliculaId}
                 onChange={(e) => setPeliculaId(e.target.value)}
                 required
               >
-                <option value="">Seleccionar película…</option>
+                <option value="">Seleccionar pelicula...</option>
                 {movies.map((m) => (
                   <option key={m._id} value={m._id}>
                     {m.titulo} ({m.anioEstreno})
@@ -158,7 +182,7 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
                 onChange={(e) => setProfesionalId(e.target.value)}
                 required
               >
-                <option value="">Seleccionar profesional…</option>
+                <option value="">Seleccionar profesional...</option>
                 {professionals.map((p) => (
                   <option key={p._id} value={p._id}>
                     {p.nombre} {p.apellido}
@@ -178,7 +202,7 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
               Cancelar
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Guardando…" : "Agregar"}
+              {isPending ? "Guardando..." : "Agregar"}
             </Button>
           </DialogFooter>
         </form>

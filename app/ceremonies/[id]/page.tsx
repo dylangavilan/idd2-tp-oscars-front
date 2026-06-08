@@ -10,25 +10,28 @@ import {
   Category,
   Movie,
   Professional,
-  UserRole,
   CeremonyState,
-  NomineeType,
 } from "@/lib/types";
 import { getAuthContext } from "@/lib/session";
+import { FlashToast } from "@/components/FlashToast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VotingPanel } from "@/components/VotingPanel";
 import { VotingProgress } from "@/components/VotingProgress";
 import { CeremonyResultsView } from "@/components/CeremonyResultsView";
 import { AddNominationModal } from "@/components/AddNominationModal";
+import { MusicalPerformancesSection } from "@/components/MusicalPerformancesSection";
 import { closeCeremony } from "@/lib/actions/ceremonies";
 
 export default async function CeremonyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ toastMessage?: string; type?: "alert" | "info" | "warn" | "success" }>;
 }) {
   const { id } = await params;
+  const toastParams = (await searchParams) ?? {};
 
   let ceremony: Ceremony;
   try {
@@ -71,11 +74,14 @@ export default async function CeremonyPage({
     // My votes (academy member)
     if (isAcademyMember) {
       try {
-        const myVotesResp = await api.get<{ voto: { id: string }; categoria: { id: string }; nominacion: { id: string } }[]>(
+        const myVotesResp = await api.get<{
+          voto: { id: string };
+          nominacion: { id: string; categoria: { id: string } };
+        }[]>(
           `/votes/my-votes?idCeremonia=${id}`
         );
         for (const v of myVotesResp) {
-          myVotes[v.categoria.id] = v.nominacion.id;
+          myVotes[v.nominacion.categoria.id] = v.nominacion.id;
         }
       } catch {}
     }
@@ -136,6 +142,7 @@ export default async function CeremonyPage({
 
   return (
     <div className="space-y-8">
+      <FlashToast message={toastParams.toastMessage} type={toastParams.type} />
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -174,22 +181,12 @@ export default async function CeremonyPage({
       {/* Voting progress (academy member, open ceremony) */}
       {votingStatus && <VotingProgress status={votingStatus} />}
 
-      {/* Actuaciones */}
-      {ceremony.actuaciones.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-medium">Actuaciones musicales</h2>
-          <div className="grid gap-2">
-            {ceremony.actuaciones.map((act, i) => (
-              <div key={i} className="border rounded-lg px-4 py-3">
-                <p className="font-medium text-sm">{act.tipoActuacion}</p>
-                <p className="text-sm text-muted-foreground">
-                  {act.artistas.map((a) => `${a.nombre} (${a.tipo})`).join(", ")}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <MusicalPerformancesSection
+        ceremonyId={id}
+        performances={ceremony.actuaciones}
+        isAdmin={isAdmin}
+        isOpen={isOpen}
+      />
 
       {/* Nominations + leaderboard */}
       <section className="space-y-4">
