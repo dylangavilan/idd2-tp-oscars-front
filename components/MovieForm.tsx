@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Professional, Movie } from "@/lib/types";
 import { createMovie, updateMovie } from "@/lib/actions/movies";
 
-const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor"] as const;
+const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor", "Otro"] as const;
 let castRowId = 0;
 
 interface CastRow {

@@ -28,7 +28,9 @@ export function CeremonyResultsView({ results }: Props) {
           return (
             <div key={cat.categoria.id} className="border rounded-lg overflow-hidden">
               <div className="px-4 py-2.5 bg-muted/40 flex items-center justify-between">
-                <span className="font-medium text-sm">{cat.categoria.nombre}</span>
+                <span className="text-sm font-semibold tracking-wide text-foreground">
+                  {cat.categoria.nombre}
+                </span>
                 <span className="text-xs text-muted-foreground">{total} votos</span>
               </div>
 

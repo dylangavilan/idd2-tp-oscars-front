@@ -84,7 +84,10 @@ export default async function VotesPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">Oscar {c.anio}</span>
-                      <Badge variant="default" className="text-xs">
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/20 bg-emerald-500/12 text-xs text-emerald-700 dark:text-emerald-300"
+                      >
                         Abierta
                       </Badge>
                     </div>
@@ -132,7 +135,10 @@ export default async function VotesPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">Oscar {c.anio}</span>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="outline"
+                      className="border-red-500/20 bg-red-500/12 text-xs text-red-700 dark:text-red-300"
+                    >
                       Cerrada
                     </Badge>
                   </div>

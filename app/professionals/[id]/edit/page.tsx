@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { Professional } from "@/lib/types";
 import { updateProfessional } from "@/lib/actions/professionals";
 
-const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor"] as const;
+const ROLES = ["Actor Principal", "Actor Secundario", "Director", "Productor", "Otro"] as const;
 
 export default async function EditProfessionalPage({
   params,

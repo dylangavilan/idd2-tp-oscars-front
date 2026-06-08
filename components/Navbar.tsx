@@ -23,18 +23,25 @@ export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
 
   return (
-    <header className="border-b bg-card">
-      <div className="container mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-        <Link
-          href="/"
-          className="shrink-0 text-sm font-semibold tracking-tight transition-opacity hover:opacity-80"
-        >
-          Premios Oscar
+    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/70 backdrop-blur-2xl">
+      <div className="mx-auto flex h-18 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/25 via-primary/8 to-transparent text-sm font-semibold text-primary shadow-sm">
+              OA
+            </div>
+            <div className="min-w-0">
+              <div className="font-heading text-lg font-semibold tracking-tight">Premios Oscar</div>
+              <div className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                Academy Dashboard
+              </div>
+            </div>
+          </div>
         </Link>
 
         {user ? (
           <>
-            <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
+            <nav className="flex flex-1 items-center gap-1 overflow-x-auto rounded-2xl border border-border/60 bg-card/80 p-1 shadow-sm">
               {mainLinks.map(({ href, label }) => {
                 const active = pathname === href || pathname.startsWith(href + "/");
 
@@ -43,9 +50,9 @@ export function Navbar({ user }: NavbarProps) {
                     key={href}
                     href={href}
                     className={cn(
-                      "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors",
+                      "whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all",
                       active
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground shadow-[0_12px_30px_-18px_rgba(196,148,52,0.95)]"
                         : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                   >
@@ -58,9 +65,9 @@ export function Navbar({ user }: NavbarProps) {
                 <Link
                   href="/audit"
                   className={cn(
-                    "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors",
+                    "whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all",
                     pathname.startsWith("/audit")
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground shadow-[0_12px_30px_-18px_rgba(196,148,52,0.95)]"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
@@ -69,15 +76,22 @@ export function Navbar({ user }: NavbarProps) {
               )}
             </nav>
 
-            <div className="shrink-0 flex items-center gap-3">
-              <span className="hidden text-sm text-muted-foreground sm:block">
-                {user.nombre} {user.apellido} <span className="text-xs opacity-50">({user.rol})</span>
-              </span>
-              <form action={logout}>
-                <Button type="submit" variant="outline" size="sm">
-                  Cerrar sesion
-                </Button>
-              </form>
+            <div className="shrink-0 rounded-2xl border border-border/60 bg-card/80 px-3 py-2 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="hidden text-right sm:block">
+                  <div className="text-sm font-medium">
+                    {user.nombre} {user.apellido}
+                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    {user.rol}
+                  </div>
+                </div>
+                <form action={logout}>
+                  <Button type="submit" variant="outline" size="sm">
+                    Cerrar sesion
+                  </Button>
+                </form>
+              </div>
             </div>
           </>
         ) : (

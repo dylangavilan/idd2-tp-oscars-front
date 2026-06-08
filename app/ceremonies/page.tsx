@@ -74,10 +74,10 @@ export default async function CeremoniesPage({
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={
+                      className={
                         c.estado === CeremonyState.CERRADA
-                          ? "secondary"
-                          : "default"
+                          ? "border-red-500/20 bg-red-500/12 text-red-700 dark:text-red-300"
+                          : "border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-300"
                       }
                     >
                       {c.estado === CeremonyState.CERRADA

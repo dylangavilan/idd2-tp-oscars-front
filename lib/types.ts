@@ -17,7 +17,7 @@ export interface Professional {
 }
 
 export interface ProfessionalRole {
-  nombre: "Actor Principal" | "Actor Secundario" | "Director" | "Productor";
+  nombre: "Actor Principal" | "Actor Secundario" | "Director" | "Productor" | "Otro";
 }
 
 export interface Movie {
@@ -33,7 +33,7 @@ export interface Movie {
 
 export interface CastMember {
   profesionalId: Professional | string;
-  rol: "Actor Principal" | "Actor Secundario" | "Director" | "Productor";
+  rol: "Actor Principal" | "Actor Secundario" | "Director" | "Productor" | "Otro";
 }
 
 export const CeremonyState = {
@@ -251,10 +251,11 @@ export interface LoginResponse {
 }
 
 export interface AuditLog {
-  id: number;
+  id_auditoria: number;
   idUsuario: number;
   accion: string;
   entidad: string;
   detalle?: string;
-  timestamp: string;
+  fecha: string;
+  email?: string;
 }

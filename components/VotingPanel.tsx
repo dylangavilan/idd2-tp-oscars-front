@@ -79,7 +79,9 @@ export function VotingPanel({
           <div key={categoryId} className="overflow-hidden rounded-lg border">
             <div className="flex items-center justify-between bg-muted/40 px-4 py-2.5">
               <div className="min-w-0">
-                <h3 className="text-sm font-medium">{group.categoryName}</h3>
+                <h3 className="text-sm font-semibold tracking-wide text-foreground">
+                  {group.categoryName}
+                </h3>
                 {selectedNomineeLabel && (
                   <p className="mt-1 text-xs text-green-700">Votaste por: {selectedNomineeLabel}</p>
                 )}
