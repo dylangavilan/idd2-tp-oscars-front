@@ -1,36 +1,178 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Premios Oscar Frontend
 
-## Getting Started
+Frontend del sistema de Premios Oscar. Esta construido con Next.js y consume la API del backend para autenticacion, administracion de entidades, votacion e historicos.
 
-First, run the development server:
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Base UI
+
+## Funcionalidades principales
+
+- login y registro
+- sesion por cookie `oscar_token`
+- navegacion por rol
+- gestion de peliculas
+- gestion de profesionales
+- gestion de categorias/premios
+- gestion de ceremonias
+- gestion de actuaciones musicales
+- votacion para miembros de academia
+- consulta de auditoria para administradores
+- reportes e historicos conectados a Cassandra
+
+## Rutas principales
+
+- `/`
+- `/login`
+- `/register`
+- `/movies`
+- `/professionals`
+- `/categories`
+- `/ceremonies`
+- `/votes`
+- `/history`
+- `/audit`
+
+## Requisitos previos
+
+- Node.js 20 o superior
+- npm
+- backend levantado y funcionando
+
+## Puerto de desarrollo
+
+El frontend corre en:
+
+- `http://localhost:3001`
+
+Esto esta definido en el script:
+
+```json
+"dev": "next dev -p 3001"
+```
+
+## Configuracion requerida
+
+Este proyecto necesita un archivo `.env` en la carpeta `TP_Premios_Oscar_Front`.
+
+Contenido recomendado:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```
+
+Importante:
+
+- el backend debe estar efectivamente levantado en `http://localhost:8000`
+- si el backend usa otro puerto, hay que actualizar `NEXT_PUBLIC_API_URL`
+
+## Levantar el proyecto
+
+### 1. Verificar que el backend este operativo
+
+Antes de levantar el front, asegurate de que:
+
+- Docker del backend este arriba
+- la API responda
+
+Chequeo rapido:
+
+```bash
+curl http://localhost:8000/health
+```
+
+### 2. Entrar a la carpeta del frontend
+
+```bash
+cd TP_Premios_Oscar_Front
+```
+
+### 3. Crear el archivo `.env`
+
+En Windows PowerShell:
+
+```powershell
+Set-Content .env "NEXT_PUBLIC_API_URL=http://localhost:8000/api"
+```
+
+En Git Bash:
+
+```bash
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api" > .env
+```
+
+### 4. Instalar dependencias
+
+```bash
+npm install
+```
+
+### 5. Levantar el servidor de desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 6. Abrir la aplicacion
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Ir a:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+http://localhost:3001
+```
 
-## Learn More
+## Orden recomendado de arranque del entorno completo
 
-To learn more about Next.js, take a look at the following resources:
+Si arrancas todo desde cero, el orden correcto es:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Levantar Docker del backend
+2. Levantar backend
+3. Levantar frontend
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ejemplo completo:
 
-## Deploy on Vercel
+```bash
+cd TP_Premios_Oscar_Back
+docker compose up -d
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+En otra terminal:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+cd TP_Premios_Oscar_Front
+npm install
+npm run dev
+```
+
+## Usuarios de prueba
+
+Password para todos: `asd123`
+
+- `admin@oscar.com`
+- `miembro@oscar.com`
+- `miembro2@oscar.com`
+- `miembro3@oscar.com`
+- `usuario@oscar.com`
+- `usuario2@oscar.com`
+- `usuario3@oscar.com`
+
+## Notas utiles
+
+- El frontend usa cookies HTTP-only para mantener la sesion.
+- La cookie principal es `oscar_token`.
+- Si reinicias Redis o el backend y queda una cookie vieja, el middleware del front la invalida automaticamente.
+- Si el login no redirige correctamente, revisar primero `NEXT_PUBLIC_API_URL`.
+- Si las pantallas cargan vacias o fallan requests, revisar que el backend este en `PORT=8000`.
+
+## Scripts disponibles
+
+- `npm run dev` -> desarrollo en `localhost:3001`
+- `npm run build` -> build de produccion
+- `npm run start` -> levantar build de produccion
+- `npm run lint` -> lint
