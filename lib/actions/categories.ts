@@ -8,6 +8,7 @@ export async function createCategory(formData: FormData) {
   await api.post("/categories", {
     nombre: formData.get("nombre"),
     descripcion: formData.get("descripcion") || "",
+    tipo: formData.get("tipo"),
   });
   revalidatePath("/categories");
   redirect("/categories?toastMessage=Categoria%20creada&type=success");
@@ -17,6 +18,7 @@ export async function updateCategory(id: string, formData: FormData) {
   await api.put(`/categories/${id}`, {
     nombre: formData.get("nombre"),
     descripcion: formData.get("descripcion") || "",
+    tipo: formData.get("tipo"),
   });
   revalidatePath("/categories");
   redirect("/categories?toastMessage=Categoria%20actualizada&type=info");

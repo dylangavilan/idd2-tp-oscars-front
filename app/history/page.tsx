@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { api } from "@/lib/api";
-import { getSession } from "@/lib/session";
 import {
   Category,
   Ceremony,
@@ -184,11 +182,6 @@ async function safeGet<T>(path: string) {
 }
 
 export default async function HistoryPage({ searchParams }: HistoryPageProps) {
-  const session = await getSession();
-  if (!session) {
-    redirect("/login");
-  }
-
   const params = (await searchParams) ?? {};
   const winnerCeremonyId = firstValue(params.winnerCeremonyId);
   const winnerCategoryId = firstValue(params.winnerCategoryId);

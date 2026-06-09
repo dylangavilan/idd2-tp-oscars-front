@@ -13,7 +13,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Category, Movie, Professional, NomineeType } from "@/lib/types";
+import { Category, CategoryTipo, Movie, Professional, NomineeType } from "@/lib/types";
 import { addNominacion } from "@/lib/actions/ceremonies";
 
 interface Props {
@@ -36,6 +36,9 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
   const [peliculaId, setPeliculaId] = useState("");
   const [profesionalId, setProfesionalId] = useState("");
 
+  const selectedCategory = categories.find((c) => c._id === categoryId);
+  const categoryTipo = selectedCategory?.tipo;
+
   function resetForm() {
     setCategoryId("");
     setTipo(NomineeType.PELICULA);
@@ -46,6 +49,14 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (!next) resetForm();
+  }
+
+  function handleCategoryChange(id: string) {
+    setCategoryId(id);
+    setPeliculaId("");
+    setProfesionalId("");
+    const cat = categories.find((c) => c._id === id);
+    setTipo(cat?.tipo === CategoryTipo.PROFESIONAL ? NomineeType.PROFESIONAL : NomineeType.PELICULA);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -112,49 +123,28 @@ export function AddNominationModal({ ceremonyId, categories, movies, professiona
             <select
               className={selectClass}
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               required
             >
               <option value="">Seleccionar categoria...</option>
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.nombre}
+                  {c.tipo === CategoryTipo.PELICULA ? " (solo películas)" : c.tipo === CategoryTipo.PROFESIONAL ? " (solo profesionales)" : ""}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Tipo de nominado</Label>
-            <div className="flex gap-6">
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="tipo"
-                  checked={tipo === NomineeType.PELICULA}
-                  onChange={() => {
-                    setTipo(NomineeType.PELICULA);
-                    setPeliculaId("");
-                    setProfesionalId("");
-                  }}
-                />
-                Pelicula
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="tipo"
-                  checked={tipo === NomineeType.PROFESIONAL}
-                  onChange={() => {
-                    setTipo(NomineeType.PROFESIONAL);
-                    setPeliculaId("");
-                    setProfesionalId("");
-                  }}
-                />
-                Profesional
-              </label>
-            </div>
-          </div>
+          {categoryTipo && (
+            <p className="text-xs text-muted-foreground">
+              Esta categoría solo admite{" "}
+              <span className="font-medium">
+                {categoryTipo === CategoryTipo.PELICULA ? "películas" : "profesionales"}
+              </span>
+              .
+            </p>
+          )}
 
           {tipo === NomineeType.PELICULA ? (
             <div className="space-y-1.5">

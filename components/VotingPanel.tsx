@@ -8,7 +8,7 @@ import { showToast } from "@/components/ui/app-toast";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Nomination, CategoryLeaderboard, UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { castVote } from "@/lib/actions/votes";
+import { castVote, changeVote } from "@/lib/actions/votes";
 import { deleteNominacion } from "@/lib/actions/ceremonies";
 
 interface CategoryGroup {
@@ -44,16 +44,20 @@ export function VotingPanel({
 
   const normalizeId = (value: unknown) => String(value ?? "");
 
-  function handleVote(nominacionId: string) {
+  function handleVote(nominacionId: string, isChanging: boolean) {
     startTransition(async () => {
       try {
-        await castVote(ceremonyId, nominacionId);
-        showToast({ message: "Voto registrado", type: "success" });
+        if (isChanging) {
+          await changeVote(ceremonyId, nominacionId);
+          showToast({ message: "Voto cambiado", type: "success" });
+        } else {
+          await castVote(ceremonyId, nominacionId);
+          showToast({ message: "Voto registrado", type: "success" });
+        }
         router.refresh();
       } catch (err) {
         const message = err instanceof Error ? err.message : "Error al votar";
-        const type = message.includes("ya emitio un voto") ? "warn" : "alert";
-        showToast({ message, type });
+        showToast({ message, type: "alert" });
       }
     });
   }
@@ -69,7 +73,6 @@ export function VotingPanel({
         const votedNominationId = normalizeId(myVotes[categoryId]);
         const totalVotos = lb?.resumen.totalVotosCategoria ?? 0;
         const categoryHasVote = Boolean(votedNominationId);
-        const canVoteInCategory = canVote && !categoryHasVote;
         const selectedNomination = group.nominations.find(
           (nomination) => normalizeId(nomination._id) === votedNominationId
         );
@@ -109,7 +112,7 @@ export function VotingPanel({
                 const rowClassName = cn(
                   "space-y-1.5 px-4 py-3 transition-colors",
                   isMyVote && "border-l-4 border-l-green-600 bg-green-50/70",
-                  !isMyVote && canVoteInCategory && "border-l-4 border-l-amber-400 bg-amber-50/50",
+                  !isMyVote && canVote && !categoryHasVote && "border-l-4 border-l-amber-400 bg-amber-50/50",
                   !isMyVote && categoryHasVote && "bg-muted/20"
                 );
 
@@ -154,14 +157,14 @@ export function VotingPanel({
                           </span>
                         )}
 
-                        {canVoteInCategory && (
+                        {canVote && !isMyVote && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleVote(nominationId)}
+                            onClick={() => handleVote(nominationId, categoryHasVote)}
                             disabled={isPending}
                           >
-                            Votar
+                            {categoryHasVote ? "Cambiar voto" : "Votar"}
                           </Button>
                         )}
 
