@@ -1,7 +1,14 @@
+export const CategoryTipo = {
+  PELICULA: "pelicula",
+  PROFESIONAL: "profesional",
+} as const;
+export type CategoryTipo = (typeof CategoryTipo)[keyof typeof CategoryTipo];
+
 export interface Category {
   _id: string;
   nombre: string;
   descripcion: string;
+  tipo: CategoryTipo;
   createdAt: string;
   updatedAt: string;
 }

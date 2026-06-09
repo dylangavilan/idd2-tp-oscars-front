@@ -29,6 +29,19 @@ export default async function NewCategoryPage() {
             rows={3}
           />
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="tipo">Tipo de nominado</Label>
+          <select
+            id="tipo"
+            name="tipo"
+            className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus:border-ring"
+            required
+          >
+            <option value="">Seleccionar tipo...</option>
+            <option value="pelicula">Solo películas</option>
+            <option value="profesional">Solo profesionales</option>
+          </select>
+        </div>
         <div className="flex gap-3 pt-2">
           <Button type="submit">Crear categoría</Button>
           <Button variant="outline" render={<Link href="/categories" />}>

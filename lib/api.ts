@@ -25,17 +25,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
 
-  const json = await res.json();
-
-  if (!res.ok) {
-    const message =
-      typeof json?.error === "string"
-        ? json.error
-        : json?.error?.message || "Error inesperado";
-    throw new ApiError(res.status, message, json?.error?.details);
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
+    throw new ApiError(res.status || 500, `Error inesperado del servidor (${res.status})`);
   }
 
-  return json.data as T;
+  const body = json as Record<string, unknown> | null;
+
+  if (!res.ok) {
+    const err = body?.error;
+    const message =
+      typeof err === "string" ? err : (err as Record<string, unknown>)?.message as string || "Error inesperado";
+    throw new ApiError(res.status, message, (err as Record<string, unknown>)?.details);
+  }
+
+  return (body as Record<string, unknown>)?.data as T;
 }
 
 export const api = {
