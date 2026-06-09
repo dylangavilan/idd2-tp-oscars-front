@@ -15,6 +15,10 @@ import {
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteCategory } from "@/lib/actions/categories";
 
+function categoryTipoLabel(tipo: Category["tipo"]) {
+  return tipo === "pelicula" ? "Pelicula" : "Profesional";
+}
+
 export default async function CategoriesPage({
   searchParams,
 }: {
@@ -52,6 +56,7 @@ export default async function CategoriesPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead>Descripcion</TableHead>
                 {isAdmin && <TableHead className="w-30">Acciones</TableHead>}
               </TableRow>
@@ -60,6 +65,7 @@ export default async function CategoriesPage({
               {categories.map((cat) => (
                 <TableRow key={cat._id}>
                   <TableCell className="font-medium">{cat.nombre}</TableCell>
+                  <TableCell>{categoryTipoLabel(cat.tipo)}</TableCell>
                   <TableCell className="text-muted-foreground">{cat.descripcion || "-"}</TableCell>
                   {isAdmin && (
                     <TableCell>

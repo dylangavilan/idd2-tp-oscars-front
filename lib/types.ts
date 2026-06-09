@@ -122,6 +122,7 @@ export interface Winner {
 export interface CategorySnapshot {
   id: string;
   nombre: string;
+  tipo?: CategoryTipo;
 }
 
 export interface MovieSnapshot {
